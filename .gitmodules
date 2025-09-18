@@ -1,0 +1,6 @@
+[submodule "external/sqlite3-cmake"]
+	path = external/sqlite3-cmake
+	url = https://github.com/sjinks/sqlite3-cmake.git
+[submodule "external/facil.io"]
+	path = external/facil.io
+	url = https://github.com/boazsegev/facil.io.git
