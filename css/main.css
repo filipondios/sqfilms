@@ -1,0 +1,99 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,700");
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Montserrat, sans-serif;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 2rem;
+  color: #333;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 50rem;
+  margin: 1.5rem auto;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
+
+h1 {
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #222;
+}
+
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: 50rem;
+}
+
+li {
+  background-color: #fff;
+  margin: 1rem 0;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.review-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #222;
+}
+
+.review-header .season {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.review-meta {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.review-meta .note {
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  color: #333;
+}
+
+.review-meta .note .star {
+  width: 1em;   /* mismo tamaño que el texto */
+  height: 1em;
+  margin-left: 0.25em;
+  vertical-align: middle;
+}
+
+.review-meta .date {
+  font-style: italic;
+  color: #777;
+}

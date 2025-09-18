@@ -1,7 +1,9 @@
-#include "fiobj_str.h"
+#include "fiobj_ary.h"
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <http.h>
 #include <sqlite3.h>
 
@@ -39,6 +41,7 @@ int init_database(const char* db_path, sqlite3** db) {
     return SQLITE_OK;
 }
 
+/*** Generates a string containing a HTML list of reviews ***/
 void generate_reviews_html(http_s* request, sqlite3* db) {
     sqlite3_stmt* stmt;
     const char* sql = "SELECT title, note, date, season FROM REVIEW";
@@ -53,8 +56,12 @@ void generate_reviews_html(http_s* request, sqlite3* db) {
     // Start the HTML code
     FIOBJ html = fiobj_str_buf(1024);
     char* code = "<!DOCTYPE html>"
-        "<html><head><title>Reviews</title></head>"
-        "<body><h1>Films and Series reviews</h1><ul>";
+        "<html><head>"
+        "<meta charset='utf-8'>"
+        "<title>Reviews</title>"
+        "<link rel='stylesheet' href='/css/main.css'>"
+        "<link rel='icon' href='/img/icon.svg' type='image/svg+xml'>"
+        "</head><body><h1>Films and Series reviews</h1></header><ol>";
     fiobj_str_write(html, code, strlen(code));
 
     while ((response = sqlite3_step(stmt)) == SQLITE_ROW) {
@@ -67,12 +74,26 @@ void generate_reviews_html(http_s* request, sqlite3* db) {
     
         if (!season) {
             // season == NULL -> its a film
-            fiobj_str_printf(section, "<li><strong>%s</strong> [%d*] "
-                "[%s]</li>", title, note, date? date : "-/-/-");
+            fiobj_str_printf(section,
+                "<li><div class='review-header'>"
+                "<h3>%s</h3></div>"
+                "<div class='review-meta'>"
+                "<span class='note'>%d/10"
+                "<img src='/img/star.svg' alt='*' class='star'></span>"
+                "<span class='date'>%s</span></li>",
+                title, note, date? date : "-/-/-");
         } else {
-            // season != NULL -> its a series, so add the season number
-            fiobj_str_printf(section, "<li><strong>%s</strong> [s%d] [%d*] "
-                "[%s]</li>", title, season, note, date? date : "-/-/-");
+            // season != NULL -> its a series, so add the season number           
+            fiobj_str_printf(section,
+                "<li><div class='review-header'>"
+                "<h3>%s</h3>"
+                "<span class='season'>Season %d</span>"
+                "</div>"
+                "<div class='review-meta'>"
+                "<span class='note'>%d/10 "
+                "<img src='/img/star.svg' alt='*' class='star'></span>"
+                "<span class='date'>%s</span></li>",
+                title, season, note, date? date : "-/-/-");            
         }
 
         fiobj_str_concat(html, section);
@@ -80,7 +101,7 @@ void generate_reviews_html(http_s* request, sqlite3* db) {
     }
 
     // Close and send the HTML code    
-    code = "</ul></body></html>";
+    code = "</ol></body></html>";
     fiobj_str_write(html, code, strlen(code));
     http_set_header(request, HTTP_HEADER_CONTENT_TYPE, http_mimetype_find("html", 4));    
 
@@ -90,10 +111,56 @@ void generate_reviews_html(http_s* request, sqlite3* db) {
     sqlite3_finalize(stmt);
 }
 
+/*** Reads an specific file and sends it to the server  ***/
+void load_file(http_s* request, const char* header_str, const char* file_path) {
+    const FIOBJ header = fiobj_str_new(header_str, strlen(header_str));
+    http_set_header(request, HTTP_HEADER_CONTENT_TYPE, header);        
+
+    // Omit '/' if its present
+    char* path = (char*) file_path;
+    if (path[0] == '/') {
+        path = path + 1;
+    }
+    
+    struct stat st;
+    int fd;
+
+    if (stat(path, &st) == -1 || (fd = open(path, O_RDONLY)) == -1) {
+        printf("[-] could not find %s", path);
+        http_send_error(request, 404);
+        return;
+    }
+
+    http_sendfile(request, fd, st.st_size, 0);
+    fiobj_free(header);
+}
+
+/*** HTTP Request handler (load page, file, etc) ***/
 void on_http_request(http_s* request) {
-    sqlite3* db = (sqlite3*) http_settings(request)->udata;
-    generate_reviews_html(request, db);
-    http_finish(request);
+    const char* path = fiobj_obj2cstr(request->path).data;
+
+    if (!strcmp("/", path) || !strcmp("/index.html", path)) {
+        // The request is about the main HTML page
+        sqlite3* db = (sqlite3*) http_settings(request)->udata;
+        generate_reviews_html(request, db);
+        http_finish(request);
+
+    } else {
+        // It could be js, css, an image, etc
+        const char* ext = strrchr(path, '.');
+        const char* mime = NULL;
+
+        if (ext) {
+            if (!strcmp(ext, ".css")) { mime = "text/css"; }
+            if (!strcmp(ext, ".js")) { mime = "application/javascript"; }
+            if (!strcmp(ext, ".svg")) { mime = "image/svg+xml"; }
+
+            if (mime) {
+                load_file(request, mime, path);
+                return;
+            }
+        }  
+    }
 }
 
 void print_help(void) {
@@ -103,7 +170,6 @@ void print_help(void) {
            "--new-db      Create and use a new SQLite database\n"
            "--help        Show this help message\n");
 }
-
 
 int main(int argc, const char* argv[]){
     char* db_path = NULL;
