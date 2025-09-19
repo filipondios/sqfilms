@@ -1,3 +1,4 @@
+#include "fiobj_hash.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -108,7 +109,7 @@ void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
         "<body>"
         "<h1>Films and Series reviews</h1>"
         "<form method='GET' action='/' class='search-bar'>"
-        "<input type='text' name='name' placeholder='Search title' value=''/>"
+        "<input type='text' name='title' placeholder='Search title' value=''/>"
         "<button type='submit'>Search</button>"
         "</form>"
         "<ol>";
@@ -157,22 +158,22 @@ void on_http_request(http_s* request) {
         // The request is about the main HTML page
         // First, parse the parameters of the page
         sqlite3* db = (sqlite3*) http_settings(request)->udata;
-        const char* name_filter = NULL;
+        const char* title_filter = NULL;       
+        http_parse_query(request);
 
         if (request->params && FIOBJ_TYPE_IS(request->params, FIOBJ_T_HASH)) {
             // This condition happens when request->params is not empty
-            http_parse_query(request);
             const FIOBJ name_key = fiobj_str_new("title", strlen("title"));
-            const FIOBJ name_val = fiobj_hash_get2(request->params, name_key);
+            const FIOBJ name_val = fiobj_hash_get(request->params, name_key);
             fiobj_free(name_key);
-
+    
             // Ensure that the (name_key -> name_value) pair is present            
             if (name_val && FIOBJ_TYPE_IS(name_val, FIOBJ_T_STRING)) {
-                name_filter = fiobj_obj2cstr(name_val).data;
+                title_filter = fiobj_obj2cstr(name_val).data;
             }
         } 
 
-        generate_homepage(request, db, name_filter);
+        generate_homepage(request, db, title_filter);
         http_finish(request);
 
     } else {
