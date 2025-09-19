@@ -1,4 +1,6 @@
 #include "fiobj_hash.h"
+#include "fiobj_str.h"
+#include "fiobject.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,12 +30,10 @@ int init_database(const char* db_path, sqlite3** db) {
         "date TEXT DEFAULT CURRENT_TIMESTAMP,"
         "season INTEGER DEFAULT NULL);";
 
-    char *err_msg = NULL;
-    response = sqlite3_exec(*db, create_table_sql, NULL, NULL, &err_msg);
+    response = sqlite3_exec(*db, create_table_sql, NULL, NULL, NULL);
     
     if (response != SQLITE_OK) {
-        fprintf(stderr, "[-] SQL error: %s\n", err_msg);
-        sqlite3_free(err_msg);
+        fprintf(stderr, "[-] SQL error: %s\n", sqlite3_errmsg(*db));
         return response;
     }
 
@@ -109,12 +109,12 @@ void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
         "<body>"
         "<h1>Films and Series reviews</h1>"
         "<form method='GET' action='/' class='search-bar'>"
-        "<input type='text' name='title' placeholder='Search title' value=''/>"
+        "<input type='text' name='title' placeholder='Search title' value='%s'/>"
         "<button type='submit'>Search</button>"
         "</form>"
         "<ol>";
 
-    fiobj_str_write(html, code, strlen(code));
+    fiobj_str_printf(html, code, filter? filter : "");
     generate_reviews_list(html, db, filter);
     code = "</ol></body></html>";
     fiobj_str_write(html, code, strlen(code));
