@@ -1,4 +1,6 @@
-#include "fiobj_ary.h"
+#include "fiobj_hash.h"
+#include "fiobj_str.h"
+#include "fiobject.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,28 +43,21 @@ int init_database(const char* db_path, sqlite3** db) {
     return SQLITE_OK;
 }
 
-/*** Generates a string containing a HTML list of reviews ***/
-void generate_reviews_html(http_s* request, sqlite3* db) {
+/*** Generates the HTML code for the list of reviews given a filter ***/
+void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
+    const char* sql = sql_filter ?
+        "SELECT title, note, date, season FROM REVIEW WHERE title LIKE ?" :
+        "SELECT title, note, date, season FROM REVIEW";
     sqlite3_stmt* stmt;
-    const char* sql = "SELECT title, note, date, season FROM REVIEW";
+
     int response = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    if (response != SQLITE_OK) return;
 
-    if (response != SQLITE_OK) {
-        fprintf(stderr, "[-] SQL prepare error: %s\n", sqlite3_errmsg(db));
-        http_send_error(request, 500);
-        return;
+    if (sql_filter) {
+        char pattern[256];
+        snprintf(pattern, sizeof(pattern), "%%%s%%", sql_filter);
+        sqlite3_bind_text(stmt, 1, pattern, -1, SQLITE_TRANSIENT);
     }
-
-    // Start the HTML code
-    FIOBJ html = fiobj_str_buf(1024);
-    char* code = "<!DOCTYPE html>"
-        "<html><head>"
-        "<meta charset='utf-8'>"
-        "<title>Reviews</title>"
-        "<link rel='stylesheet' href='/css/main.css'>"
-        "<link rel='icon' href='/img/icon.svg' type='image/svg+xml'>"
-        "</head><body><h1>Films and Series reviews</h1></header><ol>";
-    fiobj_str_write(html, code, strlen(code));
 
     while ((response = sqlite3_step(stmt)) == SQLITE_ROW) {
         // Fetch a new entry from the DB and show its fields
@@ -95,20 +90,33 @@ void generate_reviews_html(http_s* request, sqlite3* db) {
                 "<span class='date'>%s</span></li>",
                 title, season, note, date? date : "-/-/-");            
         }
-
         fiobj_str_concat(html, section);
         fiobj_free(section);
     }
+    sqlite3_finalize(stmt);    
+}
 
-    // Close and send the HTML code    
+/*** Generates the HTML code for the website homepage ***/
+void generate__homepage(http_s* request, sqlite3* db, const char* filter) {
+    FIOBJ html = fiobj_str_buf(1024);
+    char* code = "<!DOCTYPE html>"
+        "<html><head>"
+        "<meta charset='utf-8'>"
+        "<title>Reviews</title>"
+        "<link rel='stylesheet' href='/css/main.css'>"
+        "<link rel='icon' href='/img/icon.svg' type='image/svg+xml'>"
+        "</head><body><h1>Films and Series reviews</h1></header><ol>";
+
+    fiobj_str_write(html, code, strlen(code));
+    generate_reviews_list(html, db, filter);
     code = "</ol></body></html>";
     fiobj_str_write(html, code, strlen(code));
-    http_set_header(request, HTTP_HEADER_CONTENT_TYPE, http_mimetype_find("html", 4));    
-
+    
+    // Close and send the HTML code    
+    http_set_header(request, HTTP_HEADER_CONTENT_TYPE, http_mimetype_find("html", 4));
     const fio_str_info_s body = fiobj_obj2cstr(html);
     http_send_body(request, body.data, body.len);
     fiobj_free(html);
-    sqlite3_finalize(stmt);
 }
 
 /*** Reads an specific file and sends it to the server  ***/
@@ -141,8 +149,24 @@ void on_http_request(http_s* request) {
 
     if (!strcmp("/", path) || !strcmp("/index.html", path)) {
         // The request is about the main HTML page
+        // First, parse the parameters of the page
         sqlite3* db = (sqlite3*) http_settings(request)->udata;
-        generate_reviews_html(request, db);
+        const char* name_filter = NULL;
+
+        if (request->params && FIOBJ_TYPE_IS(request->params, FIOBJ_T_HASH)) {
+            // This condition happens when request->params is not empty
+            http_parse_query(request);
+            const FIOBJ name_key = fiobj_str_new("name", strlen("name"));
+            const FIOBJ name_val = fiobj_hash_get2(request->params, name_key);
+            fiobj_free(name_key);
+
+            // Ensure that the (name_key -> name_value) pair is present            
+            if (name_val && FIOBJ_TYPE_IS(name_val, FIOBJ_T_STRING)) {
+                name_filter = fiobj_obj2cstr(name_val).data;
+            }
+        } 
+
+        generate__homepage(request, db, name_filter);
         http_finish(request);
 
     } else {
