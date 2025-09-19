@@ -1,6 +1,3 @@
-#include "fiobj_hash.h"
-#include "fiobj_str.h"
-#include "fiobject.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,15 +94,24 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
 }
 
 /*** Generates the HTML code for the website homepage ***/
-void generate__homepage(http_s* request, sqlite3* db, const char* filter) {
+void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
     FIOBJ html = fiobj_str_buf(1024);
-    char* code = "<!DOCTYPE html>"
-        "<html><head>"
+    char* code =
+        "<!DOCTYPE html>"
+        "<html>"
+        "<head>"
         "<meta charset='utf-8'>"
         "<title>Reviews</title>"
         "<link rel='stylesheet' href='/css/main.css'>"
         "<link rel='icon' href='/img/icon.svg' type='image/svg+xml'>"
-        "</head><body><h1>Films and Series reviews</h1></header><ol>";
+        "</head>"
+        "<body>"
+        "<h1>Films and Series reviews</h1>"
+        "<form method='GET' action='/' class='search-bar'>"
+        "<input type='text' name='name' placeholder='Search title' value=''/>"
+        "<button type='submit'>Search</button>"
+        "</form>"
+        "<ol>";
 
     fiobj_str_write(html, code, strlen(code));
     generate_reviews_list(html, db, filter);
@@ -156,7 +162,7 @@ void on_http_request(http_s* request) {
         if (request->params && FIOBJ_TYPE_IS(request->params, FIOBJ_T_HASH)) {
             // This condition happens when request->params is not empty
             http_parse_query(request);
-            const FIOBJ name_key = fiobj_str_new("name", strlen("name"));
+            const FIOBJ name_key = fiobj_str_new("title", strlen("title"));
             const FIOBJ name_val = fiobj_hash_get2(request->params, name_key);
             fiobj_free(name_key);
 
@@ -166,7 +172,7 @@ void on_http_request(http_s* request) {
             }
         } 
 
-        generate__homepage(request, db, name_filter);
+        generate_homepage(request, db, name_filter);
         http_finish(request);
 
     } else {
