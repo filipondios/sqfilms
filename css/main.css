@@ -1,22 +1,87 @@
 @import url("https://fonts.googleapis.com/css?family=Montserrat:400,700");
 
+:root {
+  --bg-color: #f5f7fa;
+  --text-color: #333;
+  --header-bg: #f5f7fa;
+  --header-shadow: rgba(0,0,0,0.1);
+  --card-bg: #fff;
+  --card-text: #222;
+  --meta-text: #555;
+  --date-text: #777;
+  --button-bg: #0077cc;
+  --button-bg-hover: #005fa3;
+  --note-color: #333;
+}
+
+body.dark {
+  --bg-color: #222;
+  --text-color: #eee;
+  --header-bg: #333;
+  --header-shadow: rgba(255,255,255,0.1);
+  --card-bg: #444;
+  --card-text: #f0f0f0;
+  --meta-text: #eee;
+  --date-text: #bbb;
+  --button-bg: #0077cc;
+  --button-bg-hover: #005fa3;
+  --note-color: #f0f0f0;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   font-family: Montserrat, sans-serif;
-  background-color: #f5f7fa;
+  background-color: var(--bg-color);
   margin: 0;
-  padding-top: 2rem;
-  color: #333;
+  padding-top: 0;
+  color: var(--text-color);
+}
+
+#theme-toggle {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: none;
+  background-color: var(--button-bg);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  transition: background 0.2s ease;
+}
+
+#theme-toggle img {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+#theme-toggle:hover {
+  background-color: var(--button-bg-hover);
+}
+
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--header-bg);
+  padding: 1rem 0;
+  text-align: center;
+  box-shadow: 0 2px 4px var(--header-shadow);
+  width: 100%;
 }
 
 h1 {
   text-align: center;
   font-weight: 700;
-  margin-bottom: 2rem;
-  color: #222;
+  margin: 2rem 0 1rem;
+  color: var(--card-text);
 }
 
 .search-bar {
@@ -39,7 +104,7 @@ h1 {
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border: none;
-  background-color: #0077cc;
+  background-color: var(--button-bg);
   color: white;
   border-radius: 0 0.5rem 0.5rem 0;
   cursor: pointer;
@@ -47,28 +112,7 @@ h1 {
 }
 
 .search-bar button:hover {
-  background-color: #005fa3;
-}
-
-.page-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: #f5f7fa;
-  padding: 1rem 0 1rem;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  width: 100%;
-}
-
-.page-header h1 {
-  margin: 0 0 1rem;
-}
-
-.search-bar,
-.add-review {
-  max-width: 40rem;
-  margin: 0.5rem auto;
+  background-color: var(--button-bg-hover);
 }
 
 ol {
@@ -79,7 +123,8 @@ ol {
 }
 
 li {
-  background-color: #fff;
+  background-color: var(--card-bg);
+  color: var(--card-text);
   margin: 1rem 0;
   padding: 1rem 1.5rem;
   border-radius: 0.5rem;
@@ -101,7 +146,7 @@ li:hover {
 .review-header h3 {
   margin: 0;
   font-size: 1.2rem;
-  color: #222;
+  color: var(--card-text);
 }
 
 .review-header .season {
@@ -114,14 +159,14 @@ li:hover {
   display: flex;
   justify-content: space-between;
   font-size: 0.95rem;
-  color: #555;
+  color: var(--meta-text);
 }
 
 .review-meta .note {
   font-weight: bold;
   display: inline-flex;
   align-items: center;
-  color: #333;
+  color: var(--note-color);
 }
 
 .review-meta .note .star {
@@ -133,7 +178,7 @@ li:hover {
 
 .review-meta .date {
   font-style: italic;
-  color: #777;
+  color: var(--date-text);
 }
 
 .tag {
