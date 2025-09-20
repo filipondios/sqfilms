@@ -1,6 +1,3 @@
-#include "fiobj_hash.h"
-#include "fiobj_str.h"
-#include "fiobject.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +23,7 @@ int init_database(const char* db_path, sqlite3** db) {
         "CREATE TABLE IF NOT EXISTS REVIEW ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "title TEXT NOT NULL,"
-        "note INT NOT NULL,"
+        "note FLOAT NOT NULL,"
         "date TEXT DEFAULT CURRENT_TIMESTAMP,"
         "season INTEGER DEFAULT NULL);";
 
@@ -69,7 +66,7 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
             // season == NULL -> its a film
             fiobj_str_printf(section,
                 "<li><div class='review-header'>"
-                "<h3>%s</h3></div>"
+                "<h3>%s <span class='tag film'>Film</span></h3></div>"
                 "<div class='review-meta'>"
                 "<span class='note'>%d/10"
                 "<img src='/img/star.svg' alt='*' class='star'></span>"
@@ -79,7 +76,7 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
             // season != NULL -> its a series, so add the season number           
             fiobj_str_printf(section,
                 "<li><div class='review-header'>"
-                "<h3>%s</h3>"
+                "<h3>%s <span class='tag series'>Series</span></h3>"
                 "<span class='season'>Season %d</span>"
                 "</div>"
                 "<div class='review-meta'>"
@@ -107,11 +104,13 @@ void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
         "<link rel='icon' href='/img/icon.svg' type='image/svg+xml'>"
         "</head>"
         "<body>"
+        "<header class='page-header'>"
         "<h1>Films and Series reviews</h1>"
         "<form method='GET' action='/' class='search-bar'>"
         "<input type='text' name='title' placeholder='Search title' value='%s'/>"
         "<button type='submit'>Search</button>"
         "</form>"
+        "</header>"
         "<ol>";
 
     fiobj_str_printf(html, code, filter? filter : "");

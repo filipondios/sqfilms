@@ -8,10 +8,9 @@ body {
   font-family: Montserrat, sans-serif;
   background-color: #f5f7fa;
   margin: 0;
-  padding: 2rem;
+  padding-top: 2rem;
   color: #333;
 }
-
 
 h1 {
   text-align: center;
@@ -51,6 +50,26 @@ h1 {
   background-color: #005fa3;
 }
 
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #f5f7fa;
+  padding: 1rem 0 1rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 100%;
+}
+
+.page-header h1 {
+  margin: 0 0 1rem;
+}
+
+.search-bar,
+.add-review {
+  max-width: 40rem;
+  margin: 0.5rem auto;
+}
 
 ol {
   list-style: none;
@@ -115,4 +134,22 @@ li:hover {
 .review-meta .date {
   font-style: italic;
   color: #777;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  margin-left: 0.5rem;
+  border-radius: 0.4rem;
+}
+
+.tag.film {
+  background-color: #a376a2;
+}
+
+.tag.series {
+  background-color: #6D94C5;
 }
