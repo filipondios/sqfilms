@@ -1,6 +1,9 @@
 <!-- # sqfilms -->
-
-A minimalist movie & series review web app built in C with facil.io and SQLite.
+<div align="center">
+<h1>sqfilms</h1>
+<p>A minimalist movie & series review web app built in C with facil.io and SQLite.</p>
+<img height="600" alt="image" src="https://github.com/user-attachments/assets/0e51f1b1-521d-4633-ac44-265045a23204" />
+</div>
 
 ## Building with CMake
 
