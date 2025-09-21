@@ -77,6 +77,10 @@ body {
   width: 100%;
 }
 
+a {
+  text-decoration: none;
+}
+
 h1 {
   text-align: center;
   font-weight: 700;
@@ -149,11 +153,6 @@ li:hover {
   color: var(--card-text);
 }
 
-.review-header .season {
-  font-size: 0.9rem;
-  color: #888;
-}
-
 .review-meta {
   margin-top: 0.5rem;
   display: flex;
@@ -197,6 +196,10 @@ li:hover {
 
 .tag.series {
   background-color: #6D94C5;
+}
+
+.tag.season {
+  background-color: #b76d1f;
 }
 
 .empty-state {

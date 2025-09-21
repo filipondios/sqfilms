@@ -84,8 +84,8 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter,
             // season != NULL -> its a series, so add the season number           
             fiobj_str_printf(section,
                 "<li><div class='review-header'>"
-                "<h3>%s <span class='tag series'>Series</span></h3>"
-                "<span class='season'>Season %d</span>"
+                "<h3>%s <span class='tag series'>Series</span>"
+                "<span class='tag season'>Season %d</span></h3>"
                 "</div>"
                 "<div class='review-meta'>"
                 "<span class='note'>%d/10 "
@@ -128,7 +128,7 @@ void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
         "<body>"
         "<header class='page-header'>"
         "<div class='header-top'>"
-        "<h1>Films and Series reviews</h1>"
+        "<a class='title-link' href='/'><h1>Films and Series reviews</h1></a>"
         "<button id='theme-toggle'>"
         "<img src='/img/moon.svg' alt='Toggle theme'/>"
         "</button>"
