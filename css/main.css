@@ -71,7 +71,7 @@ body {
   top: 0;
   z-index: 100;
   background-color: var(--header-bg);
-  padding: 1rem 0;
+  padding: 0.5rem 0 0.1rem 0;
   text-align: center;
   box-shadow: 0 2px 4px var(--header-shadow);
   width: 100%;
@@ -197,4 +197,42 @@ li:hover {
 
 .tag.series {
   background-color: #6D94C5;
+}
+
+.empty-state {
+  text-align: center;
+  margin: 2rem 0;
+  color: #9a9a9a;
+}
+
+.empty-icon {
+  width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto 1rem;
+  fill: currentColor;
+  color: inherit;
+}
+
+.no-results {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.results-summary {
+  position: sticky;
+  bottom: 0;
+  z-index: 90;
+  background-color: var(--header-bg);
+  text-align: center;
+  padding: 0.75rem 0;
+  font-size: 0.95rem;
+  box-shadow: 0 -2px 4px var(--header-shadow);
+  color: #666;
+  font-weight: bold;
+}
+
+body.dark .results-summary {
+  color: #bbb;
 }

@@ -1,3 +1,5 @@
+#include "fiobj_str.h"
+#include "fiobject.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +41,9 @@ int init_database(const char* db_path, sqlite3** db) {
 }
 
 /*** Generates the HTML code for the list of reviews given a filter ***/
-void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
+void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter,
+        int* num_films, int* num_series) {
+
     const char* sql = sql_filter ?
         "SELECT title, note, date, season FROM REVIEW WHERE title LIKE ?" :
         "SELECT title, note, date, season FROM REVIEW";
@@ -53,6 +57,9 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
         snprintf(pattern, sizeof(pattern), "%%%s%%", sql_filter);
         sqlite3_bind_text(stmt, 1, pattern, -1, SQLITE_TRANSIENT);
     }
+
+    int series = 0;
+    int films = 0;
 
     while ((response = sqlite3_step(stmt)) == SQLITE_ROW) {
         // Fetch a new entry from the DB and show its fields
@@ -72,6 +79,7 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
                 "<img src='/img/star.svg' alt='*' class='star'></span>"
                 "<span class='date'>%s</span></li>",
                 title, note, date? date : "-/-/-");
+            ++films;
         } else {
             // season != NULL -> its a series, so add the season number           
             fiobj_str_printf(section,
@@ -83,18 +91,31 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter) {
                 "<span class='note'>%d/10 "
                 "<img src='/img/star.svg' alt='*' class='star'></span>"
                 "<span class='date'>%s</span></li>",
-                title, season, note, date? date : "-/-/-");            
+                title, season, note, date? date : "-/-/-");
+            ++series;
         }
         fiobj_str_concat(html, section);
         fiobj_free(section);
     }
-    sqlite3_finalize(stmt);    
+    
+    sqlite3_finalize(stmt);
+    *num_films = films;
+    *num_series = series;
+
+    if (!(films + series)) {
+        const char* message =
+            "<div class='empty-state'>"
+            "<img src='/img/warning.svg' aria-hidden='true' class='empty-icon'/>"
+            "<p class='no-results'>No reviews found</p>"
+            "</div>";
+        fiobj_str_write(html, message, strlen(message));
+    }
 }
 
 /*** Generates the HTML code for the website homepage ***/
 void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
-    FIOBJ html = fiobj_str_buf(1024);
-    char* code =
+    const FIOBJ html = fiobj_str_buf(1024);
+    const char* code =
         "<!DOCTYPE html>"
         "<html>"
         "<head>"
@@ -113,18 +134,30 @@ void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
         "</button>"
         "</div>"
         "<form method='GET' action='/' class='search-bar'>"
-        "<input type='text' name='title' placeholder='Search title' value='%s'/>"
+        "<input type='text' name='title' placeholder='Filter by title' value='%s'/>"
         "<button type='submit'>Search</button>"
         "</form>"
         "</header>"
         "<ol>";
-
     fiobj_str_printf(html, code, filter? filter : "");
-    generate_reviews_list(html, db, filter);
-    code = "</ol></body></html>";
-    fiobj_str_write(html, code, strlen(code));
+
+    int num_films = 0, num_series = 0;
+    generate_reviews_list(html, db, filter, &num_films, &num_series);
+    fiobj_str_write(html, "</ol>", strlen("</ol>"));
+
+    if (num_films + num_series > 0) {
+        const FIOBJ summary = fiobj_str_buf(256);
+        fiobj_str_printf(summary,
+            "<footer class='results-summary'>"
+            "%d Films, %d Series - %d Reviews total"
+            "</footer>",
+            num_films, num_series, num_films + num_series);
+        fiobj_str_concat(html, summary);
+        fiobj_free(summary);
+    }
     
     // Close and send the HTML code    
+    fiobj_str_write(html, "</body></html>", strlen("</body></html>"));
     http_set_header(request, HTTP_HEADER_CONTENT_TYPE, http_mimetype_find("html", 4));
     const fio_str_info_s body = fiobj_obj2cstr(html);
     http_send_body(request, body.data, body.len);
