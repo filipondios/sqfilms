@@ -1,8 +1,8 @@
 <!-- # sqfilms -->
 <div align="center">
-<h1>sqfilms</h1>
-<p>A minimalist movie & series review web app built in C with facil.io and SQLite.</p>
-<img height="600" alt="image" src="https://github.com/user-attachments/assets/0e51f1b1-521d-4633-ac44-265045a23204" />
+  <h1>sqfilms</h1>
+  <p>A minimalist movie & series review web app built in C with facil.io and SQLite.</p>
+  <img height="600" alt="image" src="https://github.com/user-attachments/assets/9cce14ef-be92-438e-9d01-d583a19ce6ff"/>
 </div>
 
 ## Building with CMake
