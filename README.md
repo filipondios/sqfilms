@@ -23,12 +23,14 @@ docker build -t sqfilms .
 ```
 
 Mount a host directory where the database will be stored
-(e.g. ~/films-db/reviews.db) into the container at /data:
+(e.g. ~/.films-db/reviews.db) into the container at /data:
 
 ```bash
+DB_PATH="$HOME/.films-db"
+
 docker run -it --rm \
   -p 3550:3550 \
-  -v ~/films-db:/data \
+  -v $DB_PATH:/data \
   sqfilms
 ```
 
