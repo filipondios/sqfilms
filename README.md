@@ -8,8 +8,13 @@
 ## Running with Docker
 
 You can run this project inside a Docker container without installing any
-dependencies on your machine. The container expects an existing SQLite database
-on your host (so your data persists across runs).
+dependencies on your machine.
+
+The container expects an SQLite database mounted from your host, but if the
+database file does not exist, the application will create and initialize it
+automatically on first run.
+
+Clone this repository (with submodules) and build the Docker image:
 
 ```bash
 git clone --recurse-submodules https://github.com/filipondios/sqfilms.git
@@ -17,8 +22,8 @@ cd sqfilms
 docker build -t sqfilms .
 ```
 
-Mount a host directory containing your database (e.g. ./films-db/reviews.db) into the
-container at /data:
+Mount a host directory where the database will be stored
+(e.g. ~/films-db/reviews.db) into the container at /data:
 
 ```bash
 docker run -it --rm \
@@ -26,6 +31,11 @@ docker run -it --rm \
   -v ~/films-db:/data \
   sqfilms
 ```
+
+Once the container is running, open
+<a href='http://localhost:3550'>http://localhost:3550</a>
+in your browser to access the web interface.
+
 
 ## Building with CMake
 
