@@ -5,6 +5,28 @@
   <img height="600" alt="image" src="https://github.com/user-attachments/assets/9cce14ef-be92-438e-9d01-d583a19ce6ff"/>
 </div>
 
+## Running with Docker
+
+You can run this project inside a Docker container without installing any
+dependencies on your machine. The container expects an existing SQLite database
+on your host (so your data persists across runs).
+
+```bash
+git clone --recurse-submodules https://github.com/filipondios/sqfilms.git
+cd sqfilms
+docker build -t sqfilms .
+```
+
+Mount a host directory containing your database (e.g. ./films-db/reviews.db) into the
+container at /data:
+
+```bash
+docker run -it --rm \
+  -p 3550:3550 \
+  -v ~/films-db:/data \
+  sqfilms
+```
+
 ## Building with CMake
 
 After cloning this repository, you first need to initialize the git submodules.  
