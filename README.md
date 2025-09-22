@@ -27,7 +27,6 @@ Mount a host directory where the database will be stored
 
 ```bash
 DB_PATH="$HOME/.films-db"
-
 docker run -it --rm \
   -p 3550:3550 \
   -v $DB_PATH:/data \
