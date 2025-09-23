@@ -1,10 +1,12 @@
-FROM alpine:latest
-RUN apk add --no-cache \
-    build-base \
+FROM debian:stable-slim
+RUN apt-get update && apt-get install -y \
+    #build-essential \
     cmake \
+    ninja-build \
     git \
-    bash \
-    pkgconfig
+    clang \
+    #pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
 ARG REPO_URL=https://github.com/filipondios/sqfilms.git
 ARG REPO_BRANCH=main
@@ -17,4 +19,4 @@ RUN cmake --preset x64-release-linux && \
     cmake --build --preset x64-release-linux
 
 EXPOSE 3550
-CMD ["out/x64-release-linux/sqfilms", "--path", "/data/reviews.db"]
+CMD ["./out/build/x64-release-linux/sqfilms", "--path", "/data/reviews.db"]
