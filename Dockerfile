@@ -1,11 +1,9 @@
 FROM debian:stable-slim
 RUN apt-get update && apt-get install -y \
-    #build-essential \
     cmake \
     ninja-build \
     git \
     clang \
-    #pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 ARG REPO_URL=https://github.com/filipondios/sqfilms.git
