@@ -5,6 +5,10 @@
   <img height="600" alt="image" src="https://github.com/user-attachments/assets/9cce14ef-be92-438e-9d01-d583a19ce6ff"/>
 </div>
 
+> [!IMPORTANT]
+> Before reading how to run the program of this project, you should keep in mind that there
+> is an example SQLite database located at `data/reviews.db` in this repository.
+
 ## Running with Docker
 
 You can run this project inside a Docker container without installing any
