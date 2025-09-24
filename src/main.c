@@ -1,5 +1,3 @@
-#include "fiobj_str.h"
-#include "fiobject.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +11,14 @@ enum TableIndexes {TITLE, NOTE, DATE, SEASON};
 
 
 /*** Creates a new database given a specific path ***/
-int init_database(const char* db_path, sqlite3** db) {
+int init_database(const char* db_path, sqlite3** db, int no_force) {
+    struct stat st;
+
+    if ((stat(db_path, &st) == -1) && no_force) {
+        printf("[-] could not find %s, so program is exiting\n", db_path);
+        return ~SQLITE_OK;
+    }
+    
     int response = sqlite3_open(db_path, db);
     
     if (response != SQLITE_OK) {
@@ -234,15 +239,20 @@ void on_http_request(http_s* request) {
 
 void print_help(void) {
     printf("usage: films --path <path> [options]\n"
-           "options:\n"
-           "--path <path> SQLite database path (required)\n"
-           "--new-db      Create and use a new SQLite database\n"
-           "--help        Show this help message\n");
+           "parameters:\n"
+           "\t[--path <path>] Path to a SQLite database (required). "
+           "If the database does not exist in such path, a new one is "
+           "created. This last feature can be cancelled by using "
+           "the option '--no-force'.\n"
+           "\t[--no-force] If the file path passed to the parameter "
+           "'--path' does not exist, the program will exit and not "
+           "create a new empty SQLite database.\n"
+           "\t[--help] Show this help message.\n");
 }
 
 int main(int argc, const char* argv[]){
     char* db_path = NULL;
-    int new_db = 0;
+    int no_force = 0;
     sqlite3* db = NULL;
     int response;
 
@@ -251,8 +261,8 @@ int main(int argc, const char* argv[]){
             print_help();
             return EXIT_SUCCESS;
         }
-        if (!strcmp(argv[i], "--new-db")) {
-            new_db = 1;
+        if (!strcmp(argv[i], "--no-force")) {
+            no_force = 1;
         }
         else if (!strcmp(argv[i], "--path") && (i < argc - 1)) {
             db_path = (char*) argv[++i];
@@ -265,22 +275,9 @@ int main(int argc, const char* argv[]){
         return EXIT_FAILURE;
     }
 
-    if (new_db) {
-        // Create a DB & open a connection
-        response = init_database(db_path, &db);
-
-        if (response != SQLITE_OK) {
-            return response;
-        }
-    } else {
-        // Just create a new connection
-        response = sqlite3_open(db_path, &db);
-
-        if (response != SQLITE_OK) {
-            fprintf(stderr, "[-] can't open the SQLite database: %s\n",
-                sqlite3_errmsg(db));
-            return response;
-        }
+    response = init_database(db_path, &db, no_force);
+    if (response != SQLITE_OK) {
+        return response;
     }
 
     response = http_listen("3550", NULL, .on_request = on_http_request,
