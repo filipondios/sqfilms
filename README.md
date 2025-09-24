@@ -1,7 +1,8 @@
 <!-- # sqfilms -->
 <div align="center">
   <h1>sqfilms</h1>
-  <p>A minimalist movie & series review web app built in C with facil.io and SQLite.</p>
+  <p>A minimalist movie & series review web app built in C with <a href="https://facil.io/">facil.io</a> and
+    <a href="sqlite.org">SQLite</a>.</p>
   <img height="600" alt="image" src="https://github.com/user-attachments/assets/9cce14ef-be92-438e-9d01-d583a19ce6ff"/>
 </div>
 
