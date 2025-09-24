@@ -143,12 +143,13 @@ void generate_homepage(http_s* request, sqlite3* db, const char* filter) {
         "<button type='submit'>Search</button>"
         "</form>"
         "</header>"
+        "<div class='main-content'>"
         "<ol>";
     fiobj_str_printf(html, code, filter? filter : "");
 
     int num_films = 0, num_series = 0;
     generate_reviews_list(html, db, filter, &num_films, &num_series);
-    fiobj_str_write(html, "</ol>", strlen("</ol>"));
+    fiobj_str_write(html, "</ol></div>", strlen("</ol></div>"));
 
     if (num_films + num_series > 0) {
         const FIOBJ summary = fiobj_str_buf(256);

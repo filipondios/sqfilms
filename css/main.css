@@ -32,11 +32,16 @@ body.dark {
   box-sizing: border-box;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 body {
+  display: flex;
+  flex-direction: column;
   font-family: Montserrat, sans-serif;
   background-color: var(--bg-color);
-  margin: 0;
-  padding-top: 0;
   color: var(--text-color);
 }
 
@@ -119,11 +124,18 @@ h1 {
   background-color: var(--button-bg-hover);
 }
 
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 ol {
   list-style: none;
   padding: 0;
   margin: 0 auto;
   max-width: 50rem;
+  width: 100%;
 }
 
 li {
@@ -134,6 +146,7 @@ li {
   border-radius: 0.5rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
 }
 
 li:hover {
@@ -226,14 +239,18 @@ li:hover {
 .results-summary {
   position: sticky;
   bottom: 0;
+  width: 100%;
   z-index: 90;
   background-color: var(--header-bg);
-  text-align: center;
-  padding: 0.75rem 0;
-  font-size: 0.95rem;
   box-shadow: 0 -2px 4px var(--header-shadow);
-  color: #666;
+  font-size: 0.95rem;
   font-weight: bold;
+  color: #666;
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.75rem 0;
 }
 
 body.dark .results-summary {
