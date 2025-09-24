@@ -64,4 +64,6 @@ INSERT INTO REVIEW (title, note, date, season) VALUES
 ('Severance', 7, '2025-09-14', 1),
 ('Severance', 8, NULL, 2),
 ('Dark Matter', 7, '2025-09-15', 1),
-('For All Mankind', 6, '2025-09-18', 1);
+('For All Mankind', 6, '2025-09-18', 1),
+('For All Mankind', 7.5, '2025-09-21', 2),
+('For All Mankind', 6, '2025-09-24', 3);
