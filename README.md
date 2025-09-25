@@ -16,7 +16,7 @@ You can run this project inside a Docker container without installing any
 dependencies on your machine, using the last version image from <a href='https://hub.docker.com/repository/docker/filipondios/sqfilms/general'>
 this project's Docker Hub</a>:
 
-``bash
+```bash
 docker pull filipondios/sqfilms:beta
 ```
 
