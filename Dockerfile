@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM debian:stable-slim AS builder
 RUN apt-get update && apt-get install -y \
     cmake \
     ninja-build \
@@ -16,5 +16,8 @@ RUN git clone --branch ${REPO_BRANCH} ${REPO_URL} . && \
 RUN cmake --preset x64-release-linux && \
     cmake --build --preset x64-release-linux
 
+FROM debian:stable-slim
+COPY --from=builder /app/out/build/x64-release-linux/sqfilms /usr/local/bin/sqfilms
+
 EXPOSE 3550
-CMD ["./out/build/x64-release-linux/sqfilms", "--path", "/data/reviews.db"]
+CMD ["sqfilms", "--path", "/data/reviews.db"]
