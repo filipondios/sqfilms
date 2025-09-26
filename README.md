@@ -76,21 +76,9 @@ cmake --preset x86-debug-linux
 cmake --build --preset x86-debug-linux
 ```
 
-> [!IMPORTANT]
+> [!NOTE]
 > After running build commands with a preset `<preset>`, you should find the application
 > executable binary file at `out/build/<preset>/` and it must be named `sqfilms`.
-
-Once you run the command `cmake --preset <preset>`, the `out/build/<preset>/compile_commands.json`
-file will be created. This file is used by the [clangd](https://github.com/clangd/clangd) LSP
-to provide C/C++ IDE features to many editors. However, this file needs to be in the
-root of the project. The best option is to create a symlink to the file:
-
-```sh
-cd /path/to/mceliece
-PRESET="x64-release-linux"
-cmake --preset $PRESET
-ln -s out/build/$PRESET/compile_commands.json compile_commands.json
-```
 
 > [!IMPORTANT]
 > This project currently only runs on Linux (not on Windows, macOS, Unix, or Solaris)
