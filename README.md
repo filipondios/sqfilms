@@ -82,5 +82,5 @@ cmake --build --preset x86-debug-linux
 
 > [!IMPORTANT]
 > This project currently only runs on Linux (not on Windows, macOS, Unix, or Solaris)
-> due to the nature of the facil.io library.
-> For this reason, future versions of the project are intended to run inside a Docker container.
+> due to the nature of the facil.io library. For this reason, some users might prefer
+ using the Docker container option.
