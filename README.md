@@ -13,7 +13,7 @@
 ## Running with Docker
 
 You can run this project inside a Docker container without installing any
-dependencies on your machine, using the last version image from <a href='https://hub.docker.com/repository/docker/filipondios/sqfilms/general'>
+dependencies on your machine, using the last version image from <a href='https://hub.docker.com/r/filipondios/sqfilms'>
 this project's Docker Hub</a>:
 
 ```bash
