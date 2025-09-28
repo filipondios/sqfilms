@@ -27,7 +27,7 @@ wont create any database if there is no database named `reviews.db` inside
 the mounted directory.
 
 For example, this commands will mount a host directory where the database
-will be stored (`~/.films-db/reviews.db`) into the container at /data:
+will be stored (`~/.films-db/reviews.db`) into the container at `/data`:
 
 ```bash
 DB_PATH="$HOME/.films-db"
@@ -52,8 +52,8 @@ in your browser to access the web interface.
 
 ## Building with CMake
 
-After cloning this repository, you first need to initialize the git submodules.  
-In this case, the dependencies are [sqlite3 3.50.2](https://github.com/sqlite/sqlite/tree/9d7c5df7f0e42528bf514b5231d58273bea47e40)
+After cloning this repository, you first need to initialize the git submodules. In this case, the
+dependencies are [sqlite3 3.50.2](https://github.com/sqlite/sqlite/tree/9d7c5df7f0e42528bf514b5231d58273bea47e40)
 and [facil.io 0.7.6](https://github.com/boazsegev/facil.io/tree/512a354dbd31e1895647df852d1565f9d408ed91).
 
 ```bash
@@ -63,7 +63,7 @@ cd sqfilms && git submodule update --init --recursive
 
 The `CMakePresets.json` file supports building for `x64` and `x86` architectures, in
 any mode `debug` or `release` for Linux. The compilation process is very
-simple: first you must choose a preset and the compile that preset.
+simple: first you must choose a preset and then compile that preset.
 These are some examples:
 
 ```sh
@@ -77,10 +77,10 @@ cmake --build --preset x86-debug-linux
 ```
 
 > [!NOTE]
-> After running build commands with a preset `<preset>`, you should find the application
+> After running build commands with a preset `<preset>`, you will find the application
 > executable binary file at `out/build/<preset>/` and it must be named `sqfilms`.
 
 > [!IMPORTANT]
 > This project currently only runs on Linux (not on Windows, macOS, Unix, or Solaris)
 > due to the nature of the facil.io library. For this reason, some users might prefer
- using the Docker container option.
+> using the Docker container option.
