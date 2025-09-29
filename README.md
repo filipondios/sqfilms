@@ -30,7 +30,9 @@ For example, this commands will mount a host directory where the database
 will be stored (`~/.films-db/reviews.db`) into the container at `/data`:
 
 ```bash
+# Change this path to yours
 DB_PATH="$HOME/.films-db"
+
 docker run -it --rm \
   -p 3550:3550 \
   -v $DB_PATH:/data \
