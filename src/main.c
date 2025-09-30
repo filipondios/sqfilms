@@ -253,6 +253,7 @@ void print_help(void) {
 
 int main(int argc, const char* argv[]){
     char* db_path = NULL;
+    const char* port = "3350";
     int no_force = 0;
     sqlite3* db = NULL;
     int response;
@@ -281,11 +282,11 @@ int main(int argc, const char* argv[]){
         return response;
     }
 
-    response = http_listen("3550", NULL, .on_request = on_http_request,
+    response = http_listen(port, NULL, .on_request = on_http_request,
         .udata = db, .log = 1);
 
     if (response == -1) {
-        printf("[-] port 3550 is not available\n");
+        printf("[-] port %s is not available\n", port);
         sqlite3_close(db);
         return EXIT_FAILURE;
     }
