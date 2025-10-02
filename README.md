@@ -7,7 +7,7 @@
 </div>
 
 > [!IMPORTANT]
-> Before reading how to run the program of this project, you should keep in mind that there
+> Before reading how to run this program, you should keep in mind that there
 > is an example SQLite database located at `data/reviews.db` in this repository.
 
 ## Running with Docker
