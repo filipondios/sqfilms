@@ -1,14 +1,10 @@
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <http.h>
 #include <sqlite3.h>
-
-/*** Fields/indexes of the Review Table ***/
-enum TableIndexes {TITLE, NOTE, DATE, SEASON};
-
+#include "api.h"
 
 /*** Creates a new database given a specific path ***/
 int init_database(const char* db_path, sqlite3** db, int no_force) {
@@ -50,8 +46,8 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter,
         int* num_films, int* num_series) {
 
     const char* sql = sql_filter ?
-        "SELECT title, note, date, season FROM REVIEW WHERE title LIKE ?" :
-        "SELECT title, note, date, season FROM REVIEW";
+        "SELECT * FROM REVIEW WHERE title LIKE ?" :
+        "SELECT * FROM REVIEW";
     sqlite3_stmt* stmt;
 
     int response = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -68,19 +64,20 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter,
 
     while ((response = sqlite3_step(stmt)) == SQLITE_ROW) {
         // Fetch a new entry from the DB and show its fields
+        const int id = sqlite3_column_int(stmt, ID); // TODO Handle
         const char* title = (const char*) sqlite3_column_text(stmt, TITLE);
-        const int note = sqlite3_column_int(stmt, NOTE);
+        const double note = sqlite3_column_double(stmt, NOTE);
         const char* date = (const char*) sqlite3_column_text(stmt, DATE);
         const int season = sqlite3_column_int(stmt, SEASON);
         FIOBJ section = fiobj_str_buf(256);
-    
+       
         if (!season) {
             // season == NULL -> its a film
             fiobj_str_printf(section,
                 "<li><div class='review-header'>"
                 "<h3>%s <span class='tag film'>Film</span></h3></div>"
                 "<div class='review-meta'>"
-                "<span class='note'>%d/10"
+                "<span class='note'>%.2f/10"
                 "<img src='/img/star.svg' alt='*' class='star'></span>"
                 "<span class='date'>%s</span></li>",
                 title, note, date? date : "-/-/-");
@@ -93,7 +90,7 @@ void generate_reviews_list(FIOBJ html, sqlite3* db, const char* sql_filter,
                 "<span class='tag season'>Season %d</span></h3>"
                 "</div>"
                 "<div class='review-meta'>"
-                "<span class='note'>%d/10 "
+                "<span class='note'>%.2f/10 "
                 "<img src='/img/star.svg' alt='*' class='star'></span>"
                 "<span class='date'>%s</span></li>",
                 title, season, note, date? date : "-/-/-");
@@ -197,11 +194,14 @@ void load_file(http_s* request, const char* header_str, const char* file_path) {
 /*** HTTP Request handler (load page, file, etc) ***/
 void on_http_request(http_s* request) {
     const char* path = fiobj_obj2cstr(request->path).data;
+    sqlite3* db = (sqlite3*) http_settings(request)->udata;
 
-    if (!strcmp("/", path) || !strcmp("/index.html", path)) {
+    if (!strcmp("/reviews", path)) {
+        handle_get_reviews(request, db);
+
+    } else if (!strcmp("/", path) || !strcmp("/index.html", path)) {
         // The request is about the main HTML page
         // First, parse the parameters of the page
-        sqlite3* db = (sqlite3*) http_settings(request)->udata;
         const char* title_filter = NULL;       
         http_parse_query(request);
 
@@ -253,7 +253,7 @@ void print_help(void) {
 
 int main(int argc, const char* argv[]){
     char* db_path = NULL;
-    const char* port = "3350";
+    const char* port = "3550";
     int no_force = 0;
     sqlite3* db = NULL;
     int response;
