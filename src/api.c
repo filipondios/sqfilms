@@ -1,13 +1,28 @@
+#include <stdio.h>
+#include <sqlite3.h>
 #include "api.h"
 #include "fiobj_hash.h"
-#include "fiobj_json.h"
-#include "fiobj_str.h"
 #include "fiobject.h"
-#include "sqlite3.h"
-#include <stdio.h>
+#include "http.h"
 
 void handle_get_reviews(http_s* request, sqlite3* db) {
-    const char* sql = "SELECT * FROM REVIEW";
+    const char* title_filter = NULL;
+    http_parse_query(request);
+
+    // get <value> from the /reviews?title=<value> endpoint if possible
+    if (request->params && FIOBJ_TYPE_IS(request->params, FIOBJ_T_HASH)) {
+        const FIOBJ title_key = fiobj_str_new("title", strlen("title"));
+        const FIOBJ title_value = fiobj_hash_get(request->params, title_key);
+        fiobj_free(title_key);
+
+        if (title_value && FIOBJ_TYPE_IS(title_value, FIOBJ_T_STRING)) {
+            title_filter = fiobj_obj2cstr(title_value).data;
+        }
+    }
+    
+    const char* sql = title_filter ?
+        "SELECT * FROM REVIEW WHERE title LIKE ?" :
+        "SELECT * FROM REVIEW";
     sqlite3_stmt* stmt;
 
     int response = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -15,6 +30,14 @@ void handle_get_reviews(http_s* request, sqlite3* db) {
         http_send_error(request, 500);
     }
 
+    if (title_filter) {
+        char pattern[256];
+        // prepare SQL statement (with the title filter)
+        snprintf(pattern, sizeof(pattern), "%%%s%%", title_filter);
+        sqlite3_bind_text(stmt, 1, pattern, -1, SQLITE_TRANSIENT);
+    }
+    
+    // prepare JSON response fields
     FIOBJ fields[TABLE_COUNT];
     fields[ID] = fiobj_str_new("id", strlen("id"));
     fields[TITLE] = fiobj_str_new("title", strlen("title"));
