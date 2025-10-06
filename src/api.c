@@ -21,7 +21,7 @@ void handle_get_reviews(http_s* request, sqlite3* db) {
     }
     
     const char* sql = title_filter ?
-        "SELECT * FROM REVIEW WHERE title LIKE ?" :
+        "SELECT * FROM REVIEW WHERE LOWER(title) LIKE LOWER(?)" :
         "SELECT * FROM REVIEW";
     sqlite3_stmt* stmt;
 
