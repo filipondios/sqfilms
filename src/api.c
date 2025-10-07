@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <sqlite3.h>
 #include "api.h"
-#include "fiobj_hash.h"
-#include "fiobject.h"
-#include "http.h"
+#include "db.h"
 
 void handle_get_reviews(http_s* request, sqlite3* db) {
     const char* title_filter = NULL;
@@ -19,24 +17,13 @@ void handle_get_reviews(http_s* request, sqlite3* db) {
             title_filter = fiobj_obj2cstr(title_value).data;
         }
     }
-    
-    const char* sql = title_filter ?
-        "SELECT * FROM REVIEW WHERE LOWER(title) LIKE LOWER(?)" :
-        "SELECT * FROM REVIEW";
-    sqlite3_stmt* stmt;
 
-    int response = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-    if (response != SQLITE_OK) {
-        http_send_error(request, 500);
+    sqlite3_stmt* stmt = db_get_reviews(db, title_filter);
+    if (!stmt) {
+        send_json_error(request, 500, "Database query failed");
+        return;
     }
 
-    if (title_filter) {
-        char pattern[256];
-        // prepare SQL statement (with the title filter)
-        snprintf(pattern, sizeof(pattern), "%%%s%%", title_filter);
-        sqlite3_bind_text(stmt, 1, pattern, -1, SQLITE_TRANSIENT);
-    }
-    
     // prepare JSON response fields
     FIOBJ fields[TABLE_COUNT];
     fields[ID] = fiobj_str_new("id", strlen("id"));
@@ -45,7 +32,7 @@ void handle_get_reviews(http_s* request, sqlite3* db) {
     fields[DATE] = fiobj_str_new("date", strlen("date"));
     fields[SEASON] = fiobj_str_new("season", strlen("season"));
     const FIOBJ reviews = fiobj_ary_new();
-
+    
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         // Fetch SQLite row data: id, title, note, date, season
         const FIOBJ review = fiobj_hash_new();
@@ -88,4 +75,21 @@ void handle_get_reviews(http_s* request, sqlite3* db) {
 
     fiobj_free(json);
     fiobj_free(reviews);
+}
+
+void send_json_error(http_s* request, int status, const char* message) {
+    request->status = status;
+    http_set_header(request, HTTP_HEADER_CONTENT_TYPE,
+        http_mimetype_find("json", strlen("json")));
+
+    FIOBJ obj = fiobj_hash_new();
+    fiobj_hash_set(obj, fiobj_str_new("error", strlen("error")),
+        fiobj_str_new(message, strlen(message)));
+
+    FIOBJ json = fiobj_obj2json(obj, 0);
+    fio_str_info_s str = fiobj_obj2cstr(json);
+    http_send_body(request, str.data, str.len);
+
+    fiobj_free(json);
+    fiobj_free(obj);
 }
