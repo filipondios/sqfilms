@@ -5,11 +5,11 @@ const icon = toggle.querySelector("img");
 function applyTheme(theme) {
   if (theme === "dark") {
     body.classList.add("dark");
-    icon.src = "/img/sun.svg";
+    icon.src = "/static/img/sun.svg";
     icon.alt = "Switch to light theme";
   } else {
     body.classList.remove("dark");
-    icon.src = "/img/moon.svg";
+    icon.src = "/static/img/moon.svg";
     icon.alt = "Switch to dark theme";
   }
 }
