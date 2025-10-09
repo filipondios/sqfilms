@@ -1,7 +1,10 @@
 #[macro_use]
 extern crate rocket;
+use rocket::State;
 use rocket_dyn_templates::Template;
 use clap::Parser;
+
+use crate::db::SQConn;
 mod api;
 mod db;
 
@@ -21,14 +24,25 @@ fn rocket() -> _ {
     
     rocket::build().manage(db)
         .mount("/static", rocket::fs::FileServer::from("static"))
-        .mount("/", routes![api::get_reviews, index])
+        .mount("/", routes![api::get_reviews, api::create_review,  index])
         .attach(Template::fairing())
 }
 
 #[get("/")]
-fn index() -> Template {
+fn index(db: &State<SQConn>) -> Template {
+    let connection = db.lock()
+        .expect("failed to lock DB");
+
+    let reviews = match db::fetch_reviews(&connection, None) {
+        Ok(reviews_list) => reviews_list,
+        Err(e) => {
+            eprintln!("Error loading reviews: {}", e);
+            Vec::new()
+        }
+    };
+    
     Template::render("index", rocket_dyn_templates::context! {
         title: "Film & Series Reviews",
-        message: "Welcome to SqFilms!"
+        reviews: reviews
     })
 }

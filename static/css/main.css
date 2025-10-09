@@ -256,3 +256,23 @@ li:hover {
 body.dark .results-summary {
   color: #bbb;
 }
+
+.add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.3rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  background-color: var(--button-bg);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.add-button:hover {
+  background-color: var(--button-bg-hover);
+}

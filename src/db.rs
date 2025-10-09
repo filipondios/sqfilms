@@ -86,3 +86,18 @@ pub fn fetch_reviews(conn: &Connection, title: Option<&str>)
 
     Ok(mapped.filter_map(Result::ok).collect())
 }
+
+pub fn insert_review(conn: &Connection, title: &str, note: f64,
+    date: Option<&str>, season: Option<i32>) -> rusqlite::Result<Review> {
+
+    let date_str = date.unwrap_or_else(||
+        chrono::Local::now().format("%Y-%m-%d")
+        .to_string().leak());
+
+    let sql = "INSERT INTO REVIEW (TITLE, NOTE, DATE, SEASON) VALUES (?, ?, ?, ?)";
+    conn.execute(sql, params![title, note, date_str, season])?;
+    let id = conn.last_insert_rowid() as i32;
+
+    Ok(Review { id, title: title.to_string(), note,
+        date: date_str.to_string(), season })    
+}

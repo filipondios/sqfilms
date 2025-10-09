@@ -18,14 +18,54 @@
         <form method="GET" action="/reviews" class="search-bar">
             <input type="text" name="title" placeholder="Filter by title"/>
             <button type="submit">Search</button>
+            <a href="/new" class="add-button" title="Add new review">+</a>
         </form>
     </header>
-    <main>
-        {% if message %}
-            <p>{{ message }}</p>
+    <div class="main-content">
+        <ol>
+        {% for r in reviews %}
+        {% if not r.season %}
+        <li>
+            <div class="review-header">
+                <h3>
+                    {{ r.title }}
+                    <span class="tag film">Film</span>
+                </h3>
+            </div>
+            <div class="review-meta">
+                <span class="note">
+                    {{ r.note | round(floor=true) }}/10
+                    <img src="/static/img/star.svg" alt="*" class="star">
+                </span>
+                <span class="date">{{ r.date | default(value="-/-/-") }}</span>
+            </div>
+        </li>
+        {% else %}
+        <li>
+            <div class="review-header">
+                <h3>
+                    {{ r.title }}
+                    <span class="tag series">Series</span>
+                    <span class="tag season">Season {{ r.season }}</span>
+                </h3>
+            </div>
+            <div class="review-meta">
+                <span class="note">
+                    {{ r.note | round(floor=true) }}/10
+                    <img src="/static/img/star.svg" alt="*" class="star">
+                </span>
+                <span class="date">{{ r.date | default(value="-/-/-") }}</span>
+            </div>
+        </li>
         {% endif %}
-        <ol id="reviews-list"></ol>
-    </main>
+        {% else %}
+        <div class="empty-state">
+            <img src="/static/img/warning.svg" aria-hidden="true" class="empty-icon"/>
+            <p class="no-results">No reviews found</p>
+        </div>
+        {% endfor %}
+        </ol>
+    </div>
 </body>
 </html>
 
