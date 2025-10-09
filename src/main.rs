@@ -24,25 +24,34 @@ fn rocket() -> _ {
     
     rocket::build().manage(db)
         .mount("/static", rocket::fs::FileServer::from("static"))
-        .mount("/", routes![api::get_reviews, api::create_review,  index])
+        .mount("/", routes![api::get_reviews, api::create_review,
+            index, new_review_form])
         .attach(Template::fairing())
 }
 
-#[get("/")]
-fn index(db: &State<SQConn>) -> Template {
-    let connection = db.lock()
-        .expect("failed to lock DB");
+#[get("/?<title>")]
+fn index(db: &State<SQConn>, title: Option<String>) -> Template {
+    let connection = db.lock().expect("failed to lock DB");
 
-    let reviews = match db::fetch_reviews(&connection, None) {
+    let reviews = match db::fetch_reviews(&connection, title.as_deref()) {
         Ok(reviews_list) => reviews_list,
         Err(e) => {
             eprintln!("Error loading reviews: {}", e);
             Vec::new()
         }
     };
-    
+
+    let series = reviews.iter().filter(|r| r.season.is_some()).count();
+    let films = reviews.len() - series;
+
     Template::render("index", rocket_dyn_templates::context! {
         title: "Film & Series Reviews",
-        reviews: reviews
+        reviews: reviews, series: series, films: films,
+        total: (series + films)
     })
+}
+
+#[get("/new")]
+fn new_review_form() -> Template {
+    Template::render("new", rocket_dyn_templates::context!{})
 }
