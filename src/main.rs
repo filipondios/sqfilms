@@ -47,7 +47,7 @@ fn index(db: &State<SQConn>, title: Option<String>) -> Template {
     Template::render("index", rocket_dyn_templates::context! {
         title: "Film & Series Reviews",
         reviews: reviews, series: series, films: films,
-        total: (series + films)
+        total: (series + films), title_filter: title.as_deref()
     })
 }
 
