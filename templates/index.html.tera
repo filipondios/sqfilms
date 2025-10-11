@@ -5,17 +5,13 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="/static/css/common.css">
     <link rel="stylesheet" href="/static/css/index.css">
-    <script src="/static/js/theme.js" defer></script>
     <link rel="icon" href="/static/img/icon.svg" type="image/svg+xml">
 </head>
 <body>
     <header class="page-header">
         <div class="header-top">
-            <a href="/"><h1>{{ title }}</h1></a>
+            <h1>{{ title }}</h1>
         </div>
-        <button id='theme-toggle'>
-            <img src='/static/img/moon.svg' alt='Toggle theme'/>
-        </button>
         <form method="GET" action="/" class="search-bar">
             <input type="text" name="title" placeholder="Filter by title"/ value="{{ title_filter }}">
             <button type="submit">Search</button>

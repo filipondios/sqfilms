@@ -53,5 +53,7 @@ fn index(db: &State<SQConn>, title: Option<String>) -> Template {
 
 #[get("/new")]
 fn new_review_form() -> Template {
-    Template::render("new", rocket_dyn_templates::context!{})
+    Template::render("new", rocket_dyn_templates::context! {
+        title: "Add New Review"
+    })
 }

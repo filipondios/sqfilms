@@ -1,28 +1,5 @@
 @import url("https://fonts.googleapis.com/css?family=Montserrat:400,700");
-
-:root {
-  --bg-color: #f5f7fa;
-  --text-color: #333;
-  --header-bg: #f5f7fa;
-  --shadow-color: rgba(0,0,0,0.1);
-  --card-bg: #fff;
-  --card-text: #222;
-  --date-text: #777;
-  --button-bg: #0077cc;
-  --button-bg-hover: #005fa3;
-}
-
-body.dark {
-  --bg-color: #222;
-  --text-color: #eee;
-  --header-bg: #333;
-  --header-shadow: rgba(255,255,255,0.1);
-  --card-bg: #444;
-  --card-text: #f0f0f0;
-  --date-text: #bbb;
-  --button-bg: #0077cc;
-  --button-bg-hover: #005fa3;
-}
+@import url("/static/css/theme.css");
 
 * {
   box-sizing: border-box;
@@ -37,34 +14,8 @@ body {
   display: flex;
   flex-direction: column;
   font-family: Montserrat, sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-#theme-toggle {
-  position: absolute;
-  top: 0.8rem;
-  right: 1rem;
-  width: 2.2rem;
-  height: 2.2rem;
-  border: none;
-  background-color: var(--button-bg);
-  border-radius: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.3rem;
-  transition: background 0.2s ease;
-}
-
-#theme-toggle img {
-  width: 1.2rem;
-  height: 1.2rem;
-}
-
-#theme-toggle:hover {
-  background-color: var(--button-bg-hover);
+  background-color: var(--clr-surface-a0);
+  color: var(--clr-light-a0);
 }
 
 .page-header {
@@ -73,10 +24,9 @@ body {
   left: 0;
   right: 0;
   z-index: 100;
-  background-color: var(--header-bg);
+  background-color: var(--clr-surface-a0);
   padding: 0.5rem 0 0.1rem 0;
   text-align: center;
-  box-shadow: 0 2px 4px var(--shadow-color);
   width: 100%;
 }
 
@@ -88,7 +38,7 @@ h1 {
   text-align: center;
   font-weight: 700;
   margin: 2rem 0 1rem;
-  color: var(--card-text);
+  color: var(--clr-light-a0);
 }
 
 .main-content {

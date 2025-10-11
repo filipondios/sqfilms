@@ -9,24 +9,23 @@
   flex: 1;
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 0.5rem 0 0 0.5rem;
+  border: 1px solid var(--clr-surface-a10);
+  background-color: var(--clr-surface-a10);
+  color: var(--clr-surface-a50);
+  border-radius: 0.5rem;
   outline: none;
 }
 
 .search-bar button {
+  margin-left: 0.3rem;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border: none;
-  background-color: var(--button-bg);
-  color: white;
-  border-radius: 0 0.5rem 0.5rem 0;
+  background-color: var(--clr-surface-a10);
+  color: var(--clr--light-a10);
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: background 0.2s ease;
-}
-
-.search-bar button:hover {
-  background-color: var(--button-bg-hover);
 }
 
 ol {
@@ -38,19 +37,17 @@ ol {
 }
 
 li {
-  background-color: var(--card-bg);
+  background-color: var(--clr-surface-a10);
   color: var(--card-text);
   margin: 1rem 0;
   padding: 1rem 1.5rem;
   border-radius: 0.5rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   width: 100%;
 }
 
 li:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .review-header {
@@ -88,29 +85,28 @@ li:hover {
 
 .review-meta .date {
   font-style: italic;
-  color: var(--text-color);
+  color: var(--clr--light-a10);
 }
 
 .tag {
   display: inline-block;
   font-size: 0.75rem;
-  font-weight: bold;
-  color: white;
+  color: var(--clr-dark-a0);
   padding: 0.2rem 0.5rem;
   margin-left: 0.5rem;
   border-radius: 0.4rem;
 }
 
 .tag.film {
-  background-color: #a376a2;
+  background-color: var(--clr-info-a10);
 }
 
 .tag.series {
-  background-color: #6D94C5;
+  background-color: var(--clr-success-a10);
 }
 
 .tag.season {
-  background-color: #b76d1f;
+  background-color: var(--clr-warning-a10);
 }
 
 .empty-state {
@@ -139,11 +135,9 @@ li:hover {
   bottom: 0;
   width: 100%;
   z-index: 90;
-  background-color: var(--header-bg);
-  box-shadow: 0 -2px 4px var(--shadow-color);
+  background-color: var(--clr-surface-a20);
   font-size: 0.95rem;
   font-weight: bold;
-  color: #666;
   flex-grow: 1;
   display: flex;
   align-items: flex-start;
@@ -152,7 +146,7 @@ li:hover {
 }
 
 body.dark .results-summary {
-  color: #bbb;
+  color: var(--clr--light-a10);
 }
 
 .add-button {
@@ -164,14 +158,9 @@ body.dark .results-summary {
   height: 2.2rem;
   font-size: 1.5rem;
   font-weight: bold;
-  color: white;
-  background-color: var(--button-bg);
+  color: var(--clr--light-a10);
+  background-color: var(--clr-surface-a10);
   border-radius: 0.5rem;
   text-decoration: none;
   transition: background 0.2s ease, transform 0.15s ease;
-}
-
-.add-button:hover {
-  background-color: var(--button-bg-hover);
-  transform: scale(1.1);
 }

@@ -1,0 +1,121 @@
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 80%;
+  max-width: 600px;
+  margin: 0px auto;
+  padding: 0 2.5rem;
+  border-radius: 0.5rem;
+}
+
+.review-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  color: var(--clr-light-a0);
+  background-color: var(--clr-surface-a20);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.review-form input {
+  margin-top: 0.4rem;
+  padding: 0.6rem;
+  border: 1px solid var(--clr-surface-a10);
+  background-color: var(--clr-surface-a10);
+  color: var(--clr-light-a0);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.btn-primary, .btn-cancel {
+  padding: 0.7rem 1.4rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.btn-primary {
+  background-color: var(--clr-surface-a10);
+  border: 1px solid var(--clr-surface-a30);
+  color: var(--clr-light-a0);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background-color: var(--clr-primary-a0);
+  color: var(--clr-light-a0);
+  border: 1.5px solid var(--clr-primary-a0);
+}
+
+.season-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-weight: 600;
+  color: var(--clr-light-a0);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  background-color: var(--clr-surface-a10);
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: var(--clr-primary-a10);
+  transition: .3s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px; width: 18px;
+  left: 4px; bottom: 4px;
+  background-color: var(--clr-light-a0);
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--clr-success-a0);
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.hidden {
+  display: none;
+}
+
+.season-field label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: var(--clr-light-a0);
+}
