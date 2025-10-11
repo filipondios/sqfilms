@@ -53,3 +53,17 @@ pub fn delete_review(db: &State<SQConn>, id: i32)
         Err(e) => Err((Status::InternalServerError, e.to_string())),
     }
 }
+
+#[put("/reviews/<id>", format = "json", data = "<payload>")]
+pub fn update_review(db: &State<SQConn>, id: i32, payload: Json<APIReview>)
+    -> Result<Json<Value>, (Status, Value)> {
+
+    let conn = db.lock().map_err(|_|
+        (Status::InternalServerError, json!({"error": "DB lock failed"})))?;
+    let p = payload.into_inner();
+
+    match crate::db::update_review(&conn, id, &p.title, p.note, p.date.as_deref(), p.season) {
+        Ok(_) => Ok(Json(json!({ "success": "Review updated successfully" }))),
+        Err(e) => Err((Status::InternalServerError, json!({"error": e.to_string()}))),
+    }
+}

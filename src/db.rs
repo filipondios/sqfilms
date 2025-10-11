@@ -106,3 +106,23 @@ pub fn delete_review(conn: &Connection, id: i32) -> rusqlite::Result<()> {
     conn.execute("DELETE FROM REVIEW WHERE id = ?", [id])?;
     Ok(())
 }
+
+pub fn get_review_by_id(conn: &Connection, id: i32) -> Option<Review> {
+    conn.query_row("SELECT * FROM REVIEW WHERE ID = ?", [id], |row| {
+        Ok(Review {
+            id: row.get(0)?,
+            title: row.get(1)?,
+            note: row.get(2)?,
+            date: row.get(3)?,
+            season: row.get(4)?,
+        })
+    }).ok()
+}
+
+pub fn update_review(conn: &Connection, id: i32, title: &str, note: f64,
+    date: Option<&str>, season: Option<i32>) -> rusqlite::Result<()> {
+
+    let sql = "UPDATE REVIEW SET TITLE = ?, NOTE = ?, DATE = ?, SEASON = ? WHERE ID = ?";
+    conn.execute(sql, params![title, note, date, season, id])?;
+    Ok(())
+}

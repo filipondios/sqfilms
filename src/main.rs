@@ -24,8 +24,14 @@ fn rocket() -> _ {
     
     rocket::build().manage(db)
         .mount("/static", rocket::fs::FileServer::from("static"))
-        .mount("/", routes![api::get_reviews, api::create_review,
-            api::delete_review, index, new_review_form])
+        .mount("/", routes![
+            api::get_reviews,
+            api::create_review,
+            api::delete_review,
+            api::update_review,
+            index, 
+            new_review_form,
+            edit_review_form])
         .attach(Template::fairing())
 }
 
@@ -55,5 +61,15 @@ fn index(db: &State<SQConn>, title: Option<String>) -> Template {
 fn new_review_form() -> Template {
     Template::render("new", rocket_dyn_templates::context! {
         title: "Add New Review"
+    })
+}
+
+#[get("/edit/<id>")]
+fn edit_review_form(db: &State<SQConn>, id: i32) -> Template {
+    let conn = db.lock().expect("failed to lock DB");
+    let review = db::get_review_by_id(&conn, id);
+
+    Template::render("edit", rocket_dyn_templates::context! {
+        title: "Edit Review", review: review
     })
 }
