@@ -41,17 +41,16 @@
                         Edit
                     </a>
                     <form method="POST" action="/delete/{{ r.id }}" class="inline-form delete-form">
-    <button type="submit" class="btn-action delete-btn" title="Delete">
-        <img src="/static/img/delete.svg" alt="Delete icon">
-        Delete
-    </button>
-</form>
-
+                        <button type="submit" class="btn-action delete-btn" title="Delete">
+                            <img src="/static/img/delete.svg" alt="Delete icon">
+                            Delete
+                        </button>
+                    </form>
                 </div>
             </div>
             <div class="review-meta">
                 <span class="note">
-                    {{ r.note | round(floor=true) }}/10
+                    {{ r.note }}/10
                     <img src="/static/img/star.svg" alt="*" class="star">
                 </span>
                 <span class="date">
