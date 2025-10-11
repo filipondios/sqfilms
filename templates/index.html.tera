@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="/static/css/common.css">
     <link rel="stylesheet" href="/static/css/index.css">
     <link rel="icon" href="/static/img/icon.svg" type="image/svg+xml">
+    <script src="/static/js/theme.js" defer></script>
 </head>
 <body>
     <header class="page-header">
@@ -13,7 +14,7 @@
             <h1>{{ title }}</h1>
         </div>
         <form method="GET" action="/" class="search-bar">
-            <input type="text" name="title" placeholder="Filter by title"/ value="{{ title_filter }}">
+            <input type="text" name="title" placeholder="Filter by title" value="{{ title_filter }}">
             <button type="submit">Search</button>
             <a href="/new" class="add-button" title="Add new review">+</a>
         </form>
@@ -21,40 +22,43 @@
     <div class="main-content">
         <ol>
         {% for r in reviews %}
-        {% if not r.season %}
         <li>
             <div class="review-header">
-                <h3>
-                    {{ r.title }}
-                    <span class="tag film">Film</span>
-                </h3>
+                <div class="title-tags">
+                    <h3>
+                        {{ r.title }}
+                        {% if not r.season %}
+                            <span class="tag film">Film</span>
+                        {% else %}
+                            <span class="tag series">Series</span>
+                            <span class="tag season">Season {{ r.season }}</span>
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="review-actions">
+                    <a href="/edit/{{ r.id }}" class="btn-action edit-btn" title="Edit">
+                        <img src="/static/img/edit.svg" alt="Edit icon">
+                        Edit
+                    </a>
+                    <form method="POST" action="/delete/{{ r.id }}" class="inline-form">
+                        <button type="submit" class="btn-action delete-btn" title="Delete">
+                            <img src="/static/img/delete.svg" alt="Delete icon">
+                            Delete
+                        </button>
+                    </form>
+                </div>
             </div>
             <div class="review-meta">
                 <span class="note">
                     {{ r.note | round(floor=true) }}/10
                     <img src="/static/img/star.svg" alt="*" class="star">
                 </span>
-                <span class="date">{{ r.date | default(value="-/-/-") }}</span>
-            </div>
-        </li>
-        {% else %}
-        <li>
-            <div class="review-header">
-                <h3>
-                    {{ r.title }}
-                    <span class="tag series">Series</span>
-                    <span class="tag season">Season {{ r.season }}</span>
-                </h3>
-            </div>
-            <div class="review-meta">
-                <span class="note">
-                    {{ r.note | round(floor=true) }}/10
-                    <img src="/static/img/star.svg" alt="*" class="star">
+                <span class="date">
+                    <img src="/static/img/calendar.svg" alt="Date icon" class="icon-date">
+                    {{ r.date | default(value="-/-/-") }}
                 </span>
-                <span class="date">{{ r.date | default(value="-/-/-") }}</span>
             </div>
         </li>
-        {% endif %}
         {% else %}
         <div class="empty-state">
             <img src="/static/img/warning.svg" aria-hidden="true" class="empty-icon"/>
@@ -63,9 +67,9 @@
         {% endfor %}
         </ol>
     </div>
-    <footer class='results-summary'>
+
+    <footer class="results-summary">
         <p>{{ films }} Films, {{ series }} Series - {{ total }} Reviews total</p>
     </footer>
 </body>
 </html>
-
