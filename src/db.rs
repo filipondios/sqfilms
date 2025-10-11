@@ -101,3 +101,8 @@ pub fn insert_review(conn: &Connection, title: &str, note: f64,
     Ok(Review { id, title: title.to_string(), note,
         date: date_str.to_string(), season })    
 }
+
+pub fn delete_review(conn: &Connection, id: i32) -> rusqlite::Result<()> {
+    conn.execute("DELETE FROM REVIEW WHERE id = ?", [id])?;
+    Ok(())
+}

@@ -25,7 +25,7 @@ fn rocket() -> _ {
     rocket::build().manage(db)
         .mount("/static", rocket::fs::FileServer::from("static"))
         .mount("/", routes![api::get_reviews, api::create_review,
-            index, new_review_form])
+            api::delete_review, index, new_review_form])
         .attach(Template::fairing())
 }
 

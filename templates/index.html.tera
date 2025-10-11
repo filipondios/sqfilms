@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="/static/css/common.css">
     <link rel="stylesheet" href="/static/css/index.css">
     <link rel="icon" href="/static/img/icon.svg" type="image/svg+xml">
-    <script src="/static/js/theme.js" defer></script>
+    <script src="/static/js/delete-review-confirm.js" defer></script>
 </head>
 <body>
     <header class="page-header">
@@ -15,7 +15,7 @@
         </div>
         <form method="GET" action="/" class="search-bar">
             <input type="text" name="title" placeholder="Filter by title" value="{{ title_filter }}">
-            <button type="submit">Search</button>
+            <button type="button">Search</button>
             <a href="/new" class="add-button" title="Add new review">+</a>
         </form>
     </header>
@@ -26,7 +26,7 @@
             <div class="review-header">
                 <div class="title-tags">
                     <h3>
-                        {{ r.title }}
+                        <span class="review-title">{{ r.title }}</span>
                         {% if not r.season %}
                             <span class="tag film">Film</span>
                         {% else %}
@@ -40,12 +40,13 @@
                         <img src="/static/img/edit.svg" alt="Edit icon">
                         Edit
                     </a>
-                    <form method="POST" action="/delete/{{ r.id }}" class="inline-form">
-                        <button type="submit" class="btn-action delete-btn" title="Delete">
-                            <img src="/static/img/delete.svg" alt="Delete icon">
-                            Delete
-                        </button>
-                    </form>
+                    <form method="POST" action="/delete/{{ r.id }}" class="inline-form delete-form">
+    <button type="submit" class="btn-action delete-btn" title="Delete">
+        <img src="/static/img/delete.svg" alt="Delete icon">
+        Delete
+    </button>
+</form>
+
                 </div>
             </div>
             <div class="review-meta">

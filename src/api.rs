@@ -40,3 +40,16 @@ pub fn create_review(db: &State<SQConn>, payload: Json<APIReview>)
         Err(e) => Err((Status::InternalServerError, e.to_string())),
     }
 }
+
+#[post("/delete/<id>")]
+pub fn delete_review(db: &State<SQConn>, id: i32)
+    -> Result<Json<Value>, (Status, String)> {
+
+    let conn = db.lock().map_err(|_| 
+        (Status::InternalServerError, "DB lock failed".into()))?;
+
+    match crate::db::delete_review(&conn, id) {
+        Ok(_) => Ok(Json(json!({"success": "Review deleted successfully"}))),
+        Err(e) => Err((Status::InternalServerError, e.to_string())),
+    }
+}
