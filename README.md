@@ -1,8 +1,8 @@
 <!-- # sqfilms -->
 <div align="center">
   <h1>sqfilms</h1>
-  <p>A minimalist movie & series review web app built in C with <a href="https://facil.io/">facil.io</a> and
-    <a href="sqlite.org">SQLite</a>.</p>
+  <p>A movie & series review web app built with Rust, <a href="https://rocket.rs/">Rocket</a> and
+    <a href="https://sqlite.org/">SQLite</a>.</p>
   <img height="600" alt="image" src="https://github.com/user-attachments/assets/9cce14ef-be92-438e-9d01-d583a19ce6ff"/>
 </div>
 
@@ -17,7 +17,7 @@ dependencies on your machine, using the last version image from <a href='https:/
 this project's Docker Hub</a>:
 
 ```bash
-docker pull filipondios/sqfilms:beta
+docker pull filipondios/sqfilms:v1.0.0
 ```
 
 The container expects an SQLite database mounted from your host, but if the
@@ -34,9 +34,9 @@ will be stored (`~/.films-db/reviews.db`) into the container at `/data`:
 DB_PATH="$HOME/.films-db"
 
 docker run -it --rm \
-  -p 3550:3550 \
+  -p 8000:8000 \
   -v $DB_PATH:/data \
-  sqfilms:beta
+  sqfilms:v1.0.0
 ```
 
 On the other hand, instead of pulling my docker image from Docker Hub, you
@@ -48,41 +48,18 @@ cd sqfilms && docker build -t sqfilms .
 ```
 
 Once the container is running, open
-<a href='http://localhost:3550'>http://localhost:3550</a>
+<a href='http://localhost:8000'>http://localhost:8000</a>
 in your browser to access the web interface.
 
 
-## Building with CMake
+## Building from source
 
-After cloning this repository, you first need to initialize the git submodules. In this case, the
-dependencies are [sqlite3 3.50.2](https://github.com/sqlite/sqlite/tree/9d7c5df7f0e42528bf514b5231d58273bea47e40)
-and [facil.io 0.7.6](https://github.com/boazsegev/facil.io/tree/512a354dbd31e1895647df852d1565f9d408ed91).
+After cloning this repository, you just need to run cargo in
+order to compile the program (ensure you have the rust toolchain
+installed in your system).
 
 ```bash
-git clone https://github.com/filipondios/sqfilms
-cd sqfilms && git submodule update --init --recursive
+git clone https://github.com/filipondios/sqfilms -b v1.0.0
+cd sqfilms && cargo build --release
+cargo run -- --path $DB_PATH
 ```
-
-The `CMakePresets.json` file supports building for `x64` and `x86` architectures, in
-any mode `debug` or `release` for Linux. The compilation process is very
-simple: first you must choose a preset and then compile that preset.
-These are some examples:
-
-```sh
-# Compile the project for x64 linux release mode
-cmake --preset x64-release-linux
-cmake --build --preset x64-release-linux
-
-# Compile the project for x86 linux debug mode
-cmake --preset x86-debug-linux
-cmake --build --preset x86-debug-linux
-```
-
-> [!NOTE]
-> After running build commands with a preset `<preset>`, you will find the application
-> executable binary file at `out/build/<preset>/` and it must be named `sqfilms`.
-
-> [!IMPORTANT]
-> This project currently only runs on Linux (not on Windows, macOS, Unix, or Solaris)
-> due to the nature of the facil.io library. For this reason, some users might prefer
-> using the Docker container option.
