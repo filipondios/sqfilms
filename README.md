@@ -1,9 +1,9 @@
 <!-- # sqfilms -->
 <div align="center">
   <h1>sqfilms</h1>
-  <p>A movie & series review web app built with Rust, <a href="https://rocket.rs/">Rocket</a> and
-    <a href="https://sqlite.org/">SQLite</a>.</p>
-  <img height="600" alt="image" src="https://github.com/user-attachments/assets/9cce14ef-be92-438e-9d01-d583a19ce6ff"/>
+  <p>A movie & series review web app built with <a href="https://rust-lang.org/">Rust</a>,
+    <a href="https://rocket.rs/">Rocket</a> and <a href="https://sqlite.org/">SQLite</a>.</p>
+  <img height="600" alt="image" src="https://github.com/user-attachments/assets/6e264936-23cb-4691-85da-e90901c57fce"/>
 </div>
 
 > [!IMPORTANT]
