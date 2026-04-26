@@ -29,6 +29,10 @@
             Date:
             <input type="date" name="date">
         </label>
+        <label>
+            IMDb Link:
+            <input type="url" name="imdb_link" placeholder="https://www.imdb.com/title/...">
+        </label>
         <div class="season-toggle">
             <span>Is this a series?</span>
             <label class="switch">

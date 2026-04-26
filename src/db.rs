@@ -13,6 +13,7 @@ pub struct Review {
     pub note: f64,
     pub date: String,
     pub season: Option<i32>,
+    pub imdb_link: Option<String>,
 }
 
 pub fn init_db(path: &str, no_force: bool) -> SQConn {
@@ -45,7 +46,8 @@ pub fn init_db(path: &str, no_force: bool) -> SQConn {
             title TEXT NOT NULL,
             note FLOAT NOT NULL,
             date TEXT DEFAULT CURRENT_TIMESTAMP,
-            season INTEGER DEFAULT NULL
+            season INTEGER DEFAULT NULL,
+            imdb_link TEXT DEFAULT NULL
         );
     ";
 
@@ -70,6 +72,7 @@ pub fn fetch_reviews(conn: &Connection, title: Option<&str>)
             note: row.get(2)?,
             date,
             season: row.get(4)?,
+            imdb_link: row.get(5)?,
         })
     };
 
@@ -90,18 +93,18 @@ pub fn fetch_reviews(conn: &Connection, title: Option<&str>)
 }
 
 pub fn insert_review(conn: &Connection, title: &str, note: f64,
-    date: Option<&str>, season: Option<i32>) -> rusqlite::Result<Review> {
+    date: Option<&str>, season: Option<i32>, imdb_link: Option<&str>) -> rusqlite::Result<Review> {
 
     let date_str = date.unwrap_or_else(||
         chrono::Local::now().format("%Y-%m-%d")
         .to_string().leak());
 
-    let sql = "INSERT INTO REVIEW (TITLE, NOTE, DATE, SEASON) VALUES (?, ?, ?, ?)";
-    conn.execute(sql, params![title, note, date_str, season])?;
+    let sql = "INSERT INTO REVIEW (TITLE, NOTE, DATE, SEASON, IMDB_LINK) VALUES (?, ?, ?, ?, ?)";
+    conn.execute(sql, params![title, note, date_str, season, imdb_link])?;
     let id = conn.last_insert_rowid() as i32;
 
     Ok(Review { id, title: title.to_string(), note,
-        date: date_str.to_string(), season })    
+        date: date_str.to_string(), season, imdb_link: imdb_link.map(|s| s.to_string()) })    
 }
 
 pub fn delete_review(conn: &Connection, id: i32) -> rusqlite::Result<()> {
@@ -119,14 +122,15 @@ pub fn get_review_by_id(conn: &Connection, id: i32) -> Option<Review> {
             note: row.get(2)?,
             date,
             season: row.get(4)?,
+            imdb_link: row.get(5)?,
         })
     }).ok()
 }
 
 pub fn update_review(conn: &Connection, id: i32, title: &str, note: f64,
-    date: Option<&str>, season: Option<i32>) -> rusqlite::Result<()> {
+    date: Option<&str>, season: Option<i32>, imdb_link: Option<&str>) -> rusqlite::Result<()> {
 
-    let sql = "UPDATE REVIEW SET TITLE = ?, NOTE = ?, DATE = ?, SEASON = ? WHERE ID = ?";
-    conn.execute(sql, params![title, note, date, season, id])?;
+    let sql = "UPDATE REVIEW SET TITLE = ?, NOTE = ?, DATE = ?, SEASON = ?, IMDB_LINK = ? WHERE ID = ?";
+    conn.execute(sql, params![title, note, date, season, imdb_link, id])?;
     Ok(())
 }

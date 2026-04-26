@@ -27,6 +27,7 @@
                 <div class="title-tags">
                     <h3>
                         <span class="review-title">{{ r.title }}</span>
+                        {% if r.imdb_link %}<a href="{{ r.imdb_link }}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>{% endif %}
                         {% if not r.season %}
                             <span class="tag film">Film</span>
                         {% else %}

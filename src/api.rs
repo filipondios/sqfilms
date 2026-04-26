@@ -10,6 +10,7 @@ pub struct APIReview {
     pub note: f64,
     pub date: Option<String>,
     pub season: Option<i32>,
+    pub imdb_link: Option<String>,
 }
 
 #[get("/reviews?<title>")]
@@ -35,7 +36,7 @@ pub fn create_review(db: &State<SQConn>, payload: Json<APIReview>)
         (Status::InternalServerError, "DB lock failed".into()))?;
     let p = payload.into_inner();
 
-    match insert_review(&conn, &p.title, p.note, p.date.as_deref(), p.season) {
+    match insert_review(&conn, &p.title, p.note, p.date.as_deref(), p.season, p.imdb_link.as_deref()) {
         Ok(review) => Ok(Json(review)),
         Err(e) => Err((Status::InternalServerError, e.to_string())),
     }
@@ -62,7 +63,7 @@ pub fn update_review(db: &State<SQConn>, id: i32, payload: Json<APIReview>)
         (Status::InternalServerError, json!({"error": "DB lock failed"})))?;
     let p = payload.into_inner();
 
-    match crate::db::update_review(&conn, id, &p.title, p.note, p.date.as_deref(), p.season) {
+    match crate::db::update_review(&conn, id, &p.title, p.note, p.date.as_deref(), p.season, p.imdb_link.as_deref()) {
         Ok(_) => Ok(Json(json!({ "success": "Review updated successfully" }))),
         Err(e) => Err((Status::InternalServerError, json!({"error": e.to_string()}))),
     }

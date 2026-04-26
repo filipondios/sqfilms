@@ -96,6 +96,19 @@ li:hover {
   opacity: 0.8;
 }
 
+.imdb-link-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.imdb-link-icon:hover {
+  opacity: 1;
+}
+
 .tag {
   display: inline-block;
   font-size: 0.75rem;
