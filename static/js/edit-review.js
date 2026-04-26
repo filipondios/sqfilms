@@ -6,6 +6,7 @@ form.addEventListener('submit', async (e) => {
     if (data.date === '') data.date = null;
     if (data.season === '') data.season = null;
     data.note = parseFloat(data.note);
+    if (data.season !== null) data.season = parseInt(data.season);
 
     const res = await fetch(`/reviews/${id}`, {
         method: 'PUT',

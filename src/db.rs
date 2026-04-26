@@ -62,11 +62,13 @@ pub fn fetch_reviews(conn: &Connection, title: Option<&str>)
     -> rusqlite::Result<Vec<Review>> {
 
     let mapper = |row: &rusqlite::Row| {
+        let date_opt: Option<String> = row.get(3)?;
+        let date = date_opt.unwrap_or_else(|| "-/-/-".to_string());
         Ok(Review {
             id: row.get(0)?,
             title: row.get(1)?,
             note: row.get(2)?,
-            date: row.get(3)?,
+            date,
             season: row.get(4)?,
         })
     };
@@ -109,11 +111,13 @@ pub fn delete_review(conn: &Connection, id: i32) -> rusqlite::Result<()> {
 
 pub fn get_review_by_id(conn: &Connection, id: i32) -> Option<Review> {
     conn.query_row("SELECT * FROM REVIEW WHERE ID = ?", [id], |row| {
+        let date_opt: Option<String> = row.get(3)?;
+        let date = date_opt.unwrap_or_else(|| "-/-/-".to_string());
         Ok(Review {
             id: row.get(0)?,
             title: row.get(1)?,
             note: row.get(2)?,
-            date: row.get(3)?,
+            date,
             season: row.get(4)?,
         })
     }).ok()
