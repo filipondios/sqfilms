@@ -13,13 +13,28 @@
         <div class="header-top">
             <h1>{{ title }}</h1>
         </div>
-        <form method="GET" action="/" class="search-bar">
-            <input type="text" name="title" placeholder="Filter by title" value="{{ title_filter }}">
-            <button type="button">Search</button>
+        <div class="search-bar">
+            <input type="text" id="title-input" placeholder="Filter by title" value="{{ title_filter or '' }}" oninput="handleTitleSearch()">
             <a href="/new" class="add-button" title="Add new review">+</a>
-        </form>
+            <a href="/tosee" class="add-button secondary" title="Open to-see list">To See</a>
+        </div>
     </header>
     <div class="main-content">
+        <div class="sort-container">
+            <div class="filters-wrapper">
+                <select id="type-select" class="filter-select" onchange="handleFiltersChange()">
+                    <option value="all" {% if type_filter == "films" or type_filter == "series" %}{% else %}selected{% endif %}>Todas</option>
+                    <option value="films" {% if type_filter == "films" %}selected{% endif %}>Solo películas</option>
+                    <option value="series" {% if type_filter == "series" %}selected{% endif %}>Solo series</option>
+                </select>
+                <select id="sort-select" class="filter-select" onchange="handleFiltersChange()">
+                    <option value="newest" {% if sort_by not in ['oldest', 'insert_oldest', 'insert_newest'] %}selected{% endif %}>Más recientes primero</option>
+                    <option value="oldest" {% if sort_by == "oldest" %}selected{% endif %}>Más antiguas primero</option>
+                    <option value="insert_oldest" {% if sort_by == "insert_oldest" %}selected{% endif %}>Por inserción (antiguas)</option>
+                    <option value="insert_newest" {% if sort_by == "insert_newest" %}selected{% endif %}>Por inserción (recientes)</option>
+                </select>
+            </div>
+        </div>
         <ol>
         {% for r in reviews %}
         <li>
@@ -56,7 +71,7 @@
                 </span>
                 <span class="date">
                     <img src="/static/img/calendar.svg" alt="Date icon" class="icon-date">
-                    {{ r.date | default(value="-/-/-") }}
+                    {{ r.date | default("-/-/-") }}
                 </span>
             </div>
         </li>
@@ -72,5 +87,143 @@
     <footer class="results-summary">
         <p>{{ films }} Films, {{ series }} Series - {{ total }} Reviews total</p>
     </footer>
+
+    <script>
+        let titleSearchTimeout;
+
+        function renderReviews(reviews) {
+            const reviewsList = document.querySelector('ol');
+            
+            if (reviews.length === 0) {
+                reviewsList.innerHTML = `
+                    <div class="empty-state">
+                        <img src="/static/img/warning.svg" aria-hidden="true" class="empty-icon"/>
+                        <p class="no-results">No reviews found</p>
+                    </div>
+                `;
+                updateSummary(0, 0, 0);
+                return;
+            }
+
+            let html = '';
+            let filmCount = 0;
+            let seriesCount = 0;
+
+            reviews.forEach(r => {
+                const isFilm = r.season === null;
+                if (isFilm) filmCount++;
+                else seriesCount++;
+
+                const seasonTag = r.season !== null ? `<span class="tag season">Season ${r.season}</span>` : '';
+                const typeTag = isFilm 
+                    ? `<span class="tag film">Film</span>` 
+                    : `<span class="tag series">Series</span>`;
+                const imdbLink = r.imdb_link 
+                    ? `<a href="${r.imdb_link}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>` 
+                    : '';
+
+                html += `
+                    <li>
+                        <div class="review-header">
+                            <div class="title-tags">
+                                <h3>
+                                    <span class="review-title">${r.title}</span>
+                                    ${imdbLink}
+                                    ${typeTag}
+                                    ${seasonTag}
+                                </h3>
+                            </div>
+                            <div class="review-actions">
+                                <a href="/edit/${r.id}" class="btn-action edit-btn" title="Edit">
+                                    <img src="/static/img/edit.svg" alt="Edit icon">
+                                    Edit
+                                </a>
+                                <form method="POST" action="/delete/${r.id}" class="inline-form delete-form">
+                                    <button type="submit" class="btn-action delete-btn" title="Delete">
+                                        <img src="/static/img/delete.svg" alt="Delete icon">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="review-meta">
+                            <span class="note">
+                                ${r.note}/10
+                                <img src="/static/img/star.svg" alt="*" class="star">
+                            </span>
+                            <span class="date">
+                                <img src="/static/img/calendar.svg" alt="Date icon" class="icon-date">
+                                ${r.date || '-/-/-'}
+                            </span>
+                        </div>
+                    </li>
+                `;
+            });
+
+            reviewsList.innerHTML = html;
+            updateSummary(filmCount, seriesCount, reviews.length);
+            attachDeleteFormListeners();
+        }
+
+        function updateSummary(films, series, total) {
+            const summary = document.querySelector('.results-summary p');
+            summary.textContent = `${films} Films, ${series} Series - ${total} Reviews total`;
+        }
+
+        function attachDeleteFormListeners() {
+            const deleteForms = document.querySelectorAll('.delete-form');
+            deleteForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    if (!confirm('¿Estás seguro de que deseas eliminar esta reseña?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        }
+
+        function fetchReviews() {
+            const titleInput = document.getElementById('title-input');
+            const typeSelect = document.getElementById('type-select');
+            const sortSelect = document.getElementById('sort-select');
+
+            const params = new URLSearchParams();
+            if (titleInput.value) params.append('title', titleInput.value);
+            if (typeSelect.value !== 'all') params.append('type_filter', typeSelect.value);
+            if (sortSelect.value !== 'newest') params.append('sort_by', sortSelect.value);
+
+            const queryString = params.toString() ? '?' + params.toString() : '';
+            
+            fetch('/reviews' + queryString)
+                .then(response => response.json())
+                .then(reviews => {
+                    renderReviews(reviews);
+                    updateURL(titleInput.value, typeSelect.value, sortSelect.value);
+                })
+                .catch(error => console.error('Error fetching reviews:', error));
+        }
+
+        function updateURL(title, typeFilter, sortBy) {
+            const params = new URLSearchParams();
+            if (title) params.append('title', title);
+            if (typeFilter && typeFilter !== 'all') params.append('type_filter', typeFilter);
+            if (sortBy && sortBy !== 'newest') params.append('sort_by', sortBy);
+            
+            const queryString = params.toString() ? '?' + params.toString() : '';
+            window.history.replaceState({}, '', queryString || '/');
+        }
+
+        function handleTitleSearch() {
+            clearTimeout(titleSearchTimeout);
+            titleSearchTimeout = setTimeout(() => {
+                fetchReviews();
+            }, 500);
+        }
+
+        function handleFiltersChange() {
+            fetchReviews();
+        }
+
+        attachDeleteFormListeners();
+    </script>
 </body>
 </html>

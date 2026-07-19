@@ -14,9 +14,11 @@ form.addEventListener('submit', async (e) => {
 
     const data = Object.fromEntries(new FormData(form).entries());
     if (!toggle.checked) data.season = null;
+    if (data.season === '') data.season = null;
     if (data.date === '') data.date = null;
     if (data.imdb_link === '') data.imdb_link = null;
     data.note = parseFloat(data.note);
+    if (data.season !== null) data.season = parseInt(data.season, 10);
 
     const res = await fetch('/reviews', {
         method: 'POST',
