@@ -9,6 +9,12 @@
 </head>
 <body>
     <header class="page-header">
+        <div class="header-nav-left">
+            <a href="/" class="header-nav-btn" title="Go to reviews">
+                <img src="/static/img/book.svg" alt="" class="nav-icon">
+                <span>Reviews</span>
+            </a>
+        </div>
         <div class="header-top">
             <h1>{{ title }}</h1>
         </div>
@@ -27,21 +33,31 @@
 
     <div class="main-content">
 
-        <ol>
+        <ol class="reviews-grid tosee-grid">
         {% for item in items %}
-        <li>
-            <div class="review-header">
+        <li class="review-card tosee-card">
+            <div class="poster-wrap">
+                {% if item.imdb_link %}
+                <a class="poster-link" href="{{ item.imdb_url or ('https://www.imdb.com/title/tt' ~ item.imdb_link) }}" target="_blank" rel="noopener noreferrer" aria-label="Open IMDb for {{ item.title }}">
+                {% endif %}
+                    <img class="poster" src="{{ item.poster_full_url or item.poster_url or '/static/img/poster-placeholder.svg' }}"
+                        alt="Poster of {{ item.title }}" loading="lazy"
+                        onerror="this.onerror=null;this.src='/static/img/poster-placeholder.svg';">
+                {% if item.imdb_link %}</a>{% endif %}
+                <div class="poster-top-left">
+                    {% if item.media_type == 'movie' %}
+                        <span class="tag film overlay-tag">Movie</span>
+                    {% else %}
+                        <div class="overlay-group series-stack">
+                            <span class="tag series overlay-tag">Series</span>
+                            {% if item.seasons %}<span class="tag season overlay-tag season-inline">{{ item.seasons }} seasons</span>{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
                 <div class="title-tags">
-                    <h3>
-                        <span class="review-title">{{ item.title }}</span>
-                        {% if item.imdb_link %}<a href="{{ item.imdb_url or ('https://www.imdb.com/title/tt' ~ item.imdb_link) }}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>{% endif %}
-                        {% if item.media_type == 'movie' %}
-                            <span class="tag film">Movie</span>
-                        {% else %}
-                            <span class="tag series">Series</span>
-                            {% if item.seasons %}<span class="tag season">{{ item.seasons }} seasons</span>{% endif %}
-                        {% endif %}
-                    </h3>
+                    <h3 class="review-title">{{ item.title }}</h3>
                 </div>
                 <div class="review-actions">
                     <form method="POST" action="/tosee/delete/{{ item.id }}" class="inline-form delete-form">

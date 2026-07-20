@@ -21,6 +21,10 @@
             Title:
             <input type="text" name="title" required placeholder="Enter film or series title">
         </label>
+        <label>
+            IMDb ID or URL:
+            <input type="text" name="imdb_link" placeholder="tt5463162 or https://www.imdb.com/title/tt5463162">
+        </label>
         <div class="season-toggle">
             <span>Is this a series?</span>
             <label class="switch">
@@ -28,10 +32,6 @@
                 <span class="slider"></span>
             </label>
         </div>
-        <label>
-            IMDb ID or URL:
-            <input type="text" name="imdb_link" placeholder="tt5463162 or https://www.imdb.com/title/tt5463162">
-        </label>
         <label id="seasons-field" class="hidden">
             Seasons:
             <input type="number" name="seasons" min="1" placeholder="Only for series">

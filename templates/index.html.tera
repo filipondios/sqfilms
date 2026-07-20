@@ -10,26 +10,31 @@
 </head>
 <body>
     <header class="page-header">
+        <div class="header-nav-left">
+            <a href="/tosee" class="header-nav-btn" title="Open to-see list">
+                <img src="/static/img/checklist.svg" alt="" class="nav-icon">
+                <span>To See</span>
+            </a>
+        </div>
         <div class="header-top">
             <h1>{{ title }}</h1>
         </div>
         <div class="search-bar">
             <input type="text" id="title-input" placeholder="Filter by title" value="{{ title_filter or '' }}" oninput="handleTitleSearch()">
             <a href="/new" class="add-button" title="Add new review">+</a>
-            <a href="/tosee" class="add-button secondary" title="Open to-see list">To See</a>
         </div>
     </header>
     <div class="main-content">
         <div class="sort-container">
             <div class="filters-wrapper">
                 <select id="type-select" class="filter-select" onchange="handleFiltersChange()">
-                    <option value="all" {% if type_filter == "films" or type_filter == "series" %}{% else %}selected{% endif %}>Todas</option>
-                    <option value="films" {% if type_filter == "films" %}selected{% endif %}>Solo películas</option>
-                    <option value="series" {% if type_filter == "series" %}selected{% endif %}>Solo series</option>
+                    <option value="all" {% if type_filter == "films" or type_filter == "series" %}{% else %}selected{% endif %}>All</option>
+                    <option value="films" {% if type_filter == "films" %}selected{% endif %}>Only Films</option>
+                    <option value="series" {% if type_filter == "series" %}selected{% endif %}>Only Series</option>
                 </select>
                 <select id="sort-select" class="filter-select" onchange="handleFiltersChange()">
-                    <option value="insert_oldest" {% if sort_by == "insert_oldest" %}selected{% endif %}>Por inserción (antiguas)</option>
-                    <option value="insert_newest" {% if sort_by not in ['insert_oldest'] %}selected{% endif %}>Por inserción (recientes)</option>
+                    <option value="insert_oldest" {% if sort_by == "insert_oldest" %}selected{% endif %}>By insertion (oldest)</option>
+                    <option value="insert_newest" {% if sort_by not in ['insert_oldest'] %}selected{% endif %}>By insertion (newest)</option>
                 </select>
             </div>
         </div>
@@ -37,9 +42,23 @@
         {% for r in reviews %}
         <li class="review-card">
             <div class="poster-wrap">
-                <img class="poster" src="{{ r.poster_full_url or r.poster_url or '/static/img/poster-placeholder.svg' }}"
-                    alt="Poster of {{ r.title }}" loading="lazy"
-                    onerror="this.onerror=null;this.src='/static/img/poster-placeholder.svg';">
+                {% if r.imdb_link %}
+                <a class="poster-link" href="{{ r.imdb_url or ('https://www.imdb.com/title/tt' ~ r.imdb_link) }}" target="_blank" rel="noopener noreferrer" aria-label="Open IMDb for {{ r.title }}">
+                {% endif %}
+                    <img class="poster" src="{{ r.poster_full_url or r.poster_url or '/static/img/poster-placeholder.svg' }}"
+                        alt="Poster of {{ r.title }}" loading="lazy"
+                        onerror="this.onerror=null;this.src='/static/img/poster-placeholder.svg';">
+                {% if r.imdb_link %}</a>{% endif %}
+                <div class="poster-top-left">
+                    {% if r.season is none %}
+                        <span class="tag film overlay-tag">Film</span>
+                    {% else %}
+                        <div class="overlay-group series-stack">
+                            <span class="tag series overlay-tag">Series</span>
+                            <span class="tag season overlay-tag season-inline">Season {{ r.season }}</span>
+                        </div>
+                    {% endif %}
+                </div>
                 <span class="rating-badge">
                     {{ r.note }}
                     <img src="/static/img/star.svg" alt="" class="star">
@@ -47,18 +66,7 @@
             </div>
             <div class="card-body">
                 <div class="title-tags">
-                    <h3 class="review-title">
-                        {{ r.title }}
-                        {% if r.imdb_link %}<a href="{{ r.imdb_url or ('https://www.imdb.com/title/tt' ~ r.imdb_link) }}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>{% endif %}
-                    </h3>
-                    <div class="tag-row">
-                        {% if not r.season %}
-                            <span class="tag film">Film</span>
-                        {% else %}
-                            <span class="tag series">Series</span>
-                            <span class="tag season">Season {{ r.season }}</span>
-                        {% endif %}
-                    </div>
+                    <h3 class="review-title">{{ r.title }}</h3>
                 </div>
                 <div class="review-meta">
                     <span class="date">
@@ -119,20 +127,25 @@
                 if (isFilm) filmCount++;
                 else seriesCount++;
 
-                const seasonTag = r.season !== null ? `<span class="tag season">Season ${r.season}</span>` : '';
-                const typeTag = isFilm 
-                    ? `<span class="tag film">Film</span>` 
-                    : `<span class="tag series">Series</span>`;
-                const imdbLink = r.imdb_link 
-                    ? `<a href="${r.imdb_url || 'https://www.imdb.com/title/tt' + r.imdb_link}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>` 
-                    : '';
                 const posterSrc = r.poster_full_url || r.poster_url || '/static/img/poster-placeholder.svg';
+                const posterLink = r.imdb_link
+                    ? `<a class="poster-link" href="${r.imdb_url || 'https://www.imdb.com/title/tt' + r.imdb_link}" target="_blank" rel="noopener noreferrer" aria-label="Open IMDb for ${r.title}">`
+                    : '';
+                const posterLinkClose = r.imdb_link ? '</a>' : '';
+                const typeOverlay = isFilm
+                    ? `<span class="tag film overlay-tag">Film</span>`
+                    : `<div class="overlay-group series-stack"><span class="tag series overlay-tag">Series</span><span class="tag season overlay-tag season-inline">Season ${r.season}</span></div>`;
 
                 html += `
                     <li class="review-card">
                         <div class="poster-wrap">
+                            ${posterLink}
                             <img class="poster" src="${posterSrc}" alt="Poster of ${r.title}" loading="lazy"
                                 onerror="this.onerror=null;this.src='/static/img/poster-placeholder.svg';">
+                            ${posterLinkClose}
+                            <div class="poster-top-left">
+                                ${typeOverlay}
+                            </div>
                             <span class="rating-badge">
                                 ${r.note}
                                 <img src="/static/img/star.svg" alt="" class="star">
@@ -140,14 +153,7 @@
                         </div>
                         <div class="card-body">
                             <div class="title-tags">
-                                <h3 class="review-title">
-                                    ${r.title}
-                                    ${imdbLink}
-                                </h3>
-                                <div class="tag-row">
-                                    ${typeTag}
-                                    ${seasonTag}
-                                </div>
+                                <h3 class="review-title">${r.title}</h3>
                             </div>
                             <div class="review-meta">
                                 <span class="date">
