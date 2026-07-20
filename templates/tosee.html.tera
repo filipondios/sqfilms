@@ -34,7 +34,7 @@
                 <div class="title-tags">
                     <h3>
                         <span class="review-title">{{ item.title }}</span>
-                        {% if item.imdb_link %}<a href="{{ item.imdb_link }}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>{% endif %}
+                        {% if item.imdb_link %}<a href="{{ item.imdb_url or ('https://www.imdb.com/title/tt' ~ item.imdb_link) }}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>{% endif %}
                         {% if item.media_type == 'movie' %}
                             <span class="tag film">Movie</span>
                         {% else %}

@@ -28,28 +28,43 @@
                     <option value="series" {% if type_filter == "series" %}selected{% endif %}>Solo series</option>
                 </select>
                 <select id="sort-select" class="filter-select" onchange="handleFiltersChange()">
-                    <option value="newest" {% if sort_by not in ['oldest', 'insert_oldest', 'insert_newest'] %}selected{% endif %}>Más recientes primero</option>
-                    <option value="oldest" {% if sort_by == "oldest" %}selected{% endif %}>Más antiguas primero</option>
                     <option value="insert_oldest" {% if sort_by == "insert_oldest" %}selected{% endif %}>Por inserción (antiguas)</option>
-                    <option value="insert_newest" {% if sort_by == "insert_newest" %}selected{% endif %}>Por inserción (recientes)</option>
+                    <option value="insert_newest" {% if sort_by not in ['insert_oldest'] %}selected{% endif %}>Por inserción (recientes)</option>
                 </select>
             </div>
         </div>
-        <ol>
+        <ol class="reviews-grid">
         {% for r in reviews %}
-        <li>
-            <div class="review-header">
+        <li class="review-card">
+            <div class="poster-wrap">
+                <img class="poster" src="{{ r.poster_full_url or r.poster_url or '/static/img/poster-placeholder.svg' }}"
+                    alt="Poster of {{ r.title }}" loading="lazy"
+                    onerror="this.onerror=null;this.src='/static/img/poster-placeholder.svg';">
+                <span class="rating-badge">
+                    {{ r.note }}
+                    <img src="/static/img/star.svg" alt="" class="star">
+                </span>
+            </div>
+            <div class="card-body">
                 <div class="title-tags">
-                    <h3>
-                        <span class="review-title">{{ r.title }}</span>
-                        {% if r.imdb_link %}<a href="{{ r.imdb_link }}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>{% endif %}
+                    <h3 class="review-title">
+                        {{ r.title }}
+                        {% if r.imdb_link %}<a href="{{ r.imdb_url or ('https://www.imdb.com/title/tt' ~ r.imdb_link) }}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>{% endif %}
+                    </h3>
+                    <div class="tag-row">
                         {% if not r.season %}
                             <span class="tag film">Film</span>
                         {% else %}
                             <span class="tag series">Series</span>
                             <span class="tag season">Season {{ r.season }}</span>
                         {% endif %}
-                    </h3>
+                    </div>
+                </div>
+                <div class="review-meta">
+                    <span class="date">
+                        <img src="/static/img/calendar.svg" alt="Date icon" class="icon-date">
+                        {{ r.date | default("-/-/-") }}
+                    </span>
                 </div>
                 <div class="review-actions">
                     <a href="/edit/{{ r.id }}" class="btn-action edit-btn" title="Edit">
@@ -63,16 +78,6 @@
                         </button>
                     </form>
                 </div>
-            </div>
-            <div class="review-meta">
-                <span class="note">
-                    {{ r.note }}/10
-                    <img src="/static/img/star.svg" alt="*" class="star">
-                </span>
-                <span class="date">
-                    <img src="/static/img/calendar.svg" alt="Date icon" class="icon-date">
-                    {{ r.date | default("-/-/-") }}
-                </span>
             </div>
         </li>
         {% else %}
@@ -119,19 +124,36 @@
                     ? `<span class="tag film">Film</span>` 
                     : `<span class="tag series">Series</span>`;
                 const imdbLink = r.imdb_link 
-                    ? `<a href="${r.imdb_link}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>` 
+                    ? `<a href="${r.imdb_url || 'https://www.imdb.com/title/tt' + r.imdb_link}" target="_blank" title="IMDb"><img src="/static/img/link.svg" alt="IMDb link" class="imdb-link-icon"></a>` 
                     : '';
+                const posterSrc = r.poster_full_url || r.poster_url || '/static/img/poster-placeholder.svg';
 
                 html += `
-                    <li>
-                        <div class="review-header">
+                    <li class="review-card">
+                        <div class="poster-wrap">
+                            <img class="poster" src="${posterSrc}" alt="Poster of ${r.title}" loading="lazy"
+                                onerror="this.onerror=null;this.src='/static/img/poster-placeholder.svg';">
+                            <span class="rating-badge">
+                                ${r.note}
+                                <img src="/static/img/star.svg" alt="" class="star">
+                            </span>
+                        </div>
+                        <div class="card-body">
                             <div class="title-tags">
-                                <h3>
-                                    <span class="review-title">${r.title}</span>
+                                <h3 class="review-title">
+                                    ${r.title}
                                     ${imdbLink}
+                                </h3>
+                                <div class="tag-row">
                                     ${typeTag}
                                     ${seasonTag}
-                                </h3>
+                                </div>
+                            </div>
+                            <div class="review-meta">
+                                <span class="date">
+                                    <img src="/static/img/calendar.svg" alt="Date icon" class="icon-date">
+                                    ${r.date || '-/-/-'}
+                                </span>
                             </div>
                             <div class="review-actions">
                                 <a href="/edit/${r.id}" class="btn-action edit-btn" title="Edit">
@@ -145,16 +167,6 @@
                                     </button>
                                 </form>
                             </div>
-                        </div>
-                        <div class="review-meta">
-                            <span class="note">
-                                ${r.note}/10
-                                <img src="/static/img/star.svg" alt="*" class="star">
-                            </span>
-                            <span class="date">
-                                <img src="/static/img/calendar.svg" alt="Date icon" class="icon-date">
-                                ${r.date || '-/-/-'}
-                            </span>
                         </div>
                     </li>
                 `;
@@ -189,7 +201,7 @@
             const params = new URLSearchParams();
             if (titleInput.value) params.append('title', titleInput.value);
             if (typeSelect.value !== 'all') params.append('type_filter', typeSelect.value);
-            if (sortSelect.value !== 'newest') params.append('sort_by', sortSelect.value);
+            if (sortSelect.value !== 'insert_newest') params.append('sort_by', sortSelect.value);
 
             const queryString = params.toString() ? '?' + params.toString() : '';
             
@@ -206,7 +218,7 @@
             const params = new URLSearchParams();
             if (title) params.append('title', title);
             if (typeFilter && typeFilter !== 'all') params.append('type_filter', typeFilter);
-            if (sortBy && sortBy !== 'newest') params.append('sort_by', sortBy);
+            if (sortBy && sortBy !== 'insert_newest') params.append('sort_by', sortBy);
             
             const queryString = params.toString() ? '?' + params.toString() : '';
             window.history.replaceState({}, '', queryString || '/');

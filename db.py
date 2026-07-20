@@ -45,6 +45,18 @@ def init_db():
                     seasons INTEGER DEFAULT NULL
                 );
             """)
+            _add_column_if_missing(conn, 'REVIEW', 'poster_url', 'TEXT DEFAULT NULL')
+            _add_column_if_missing(conn, 'TOSEE', 'poster_url', 'TEXT DEFAULT NULL')
         print("[+] database initialized successfully")
     except Exception as e:
         raise RuntimeError(f"failed to open or create database: {e}")
+
+
+def _add_column_if_missing(conn, table, column, definition):
+    """ Adds a column to an existing table if it doesn't already exist.
+    Needed because CREATE TABLE IF NOT EXISTS won't alter tables that
+    already existed before this column was introduced. """
+    existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in existing:
+        print(f"[+] adding missing column {column} to {table}")
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")

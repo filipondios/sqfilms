@@ -29,8 +29,8 @@
             </label>
         </div>
         <label>
-            IMDb Link:
-            <input type="url" name="imdb_link" placeholder="https://www.imdb.com/title/...">
+            IMDb ID or URL:
+            <input type="text" name="imdb_link" placeholder="tt5463162 or https://www.imdb.com/title/tt5463162">
         </label>
         <label id="seasons-field" class="hidden">
             Seasons:

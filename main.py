@@ -3,12 +3,13 @@ import sqlite3
 import uvicorn
 from datetime import datetime
 from typing import Optional
-from fastapi import FastAPI, Request, Query, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from db import init_db, get_db
 from schemas import APIReview, APIToseeItem
+from tmdb import build_imdb_url, build_poster_url, fetch_poster_url, normalize_imdb_link, normalize_poster_url
 
 # initializate FastAPI app
 app = FastAPI(title='sqfilms')
@@ -18,6 +19,15 @@ init_db()
 if os.path.exists('static'):
     app.mount('/static', StaticFiles(directory='static'), name='static')
 templates = Jinja2Templates(directory='templates')
+
+
+def _serialize_review(row):
+    data = dict(row)
+    data['imdb_link'] = normalize_imdb_link(data.get('imdb_link'))
+    data['imdb_url'] = build_imdb_url(data.get('imdb_link'))
+    data['poster_url'] = normalize_poster_url(data.get('poster_url'))
+    data['poster_full_url'] = build_poster_url(data.get('poster_url'))
+    return data
 
 
 @app.get('/api/reviews')
@@ -40,12 +50,12 @@ def get_reviews(title: Optional[str] = None, sort_by: Optional[str] = None,
         clauses.append('LOWER(title) LIKE LOWER(?)')
         params.append(f'%{title}%')
 
-    where_clause = f'WHERE {' AND '.join(clauses)}' if clauses else ''
+    where_clause = f"WHERE {' AND '.join(clauses)}" if clauses else ''
     sql = f'SELECT * FROM REVIEW {where_clause} {order_clause}'
 
     try:
         cursor = db.execute(sql, params)
-        return [dict(row) for row in cursor.fetchall()]
+        return [_serialize_review(row) for row in cursor.fetchall()]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -55,16 +65,22 @@ def create_review(payload: APIReview, db: sqlite3.Connection = Depends(get_db)):
     """ Creates a new review in the database."""
 
     date_str = payload.date or datetime.now().strftime('%Y-%m-%d')
-    sql = 'INSERT INTO REVIEW (TITLE, NOTE, DATE, SEASON, IMDB_LINK) VALUES (?, ?, ?, ?, ?)'
+    compact_imdb_id = normalize_imdb_link(payload.imdb_link)
+    poster_url = fetch_poster_url(payload.imdb_link)
+    compact_poster_url = normalize_poster_url(poster_url)
+    sql = 'INSERT INTO REVIEW (TITLE, NOTE, DATE, SEASON, IMDB_LINK, POSTER_URL) VALUES (?, ?, ?, ?, ?, ?)'
     
     try:
         cursor = db.execute(sql, (payload.title, payload.note, 
-            date_str, payload.season, payload.imdb_link))
+            date_str, payload.season, compact_imdb_id, compact_poster_url))
         db.commit()
 
         return { 'id': cursor.lastrowid, 'title': payload.title,
             'note': payload.note, 'date': date_str,
-            'season': payload.season, 'imdb_link': payload.imdb_link }
+            'season': payload.season, 'imdb_link': compact_imdb_id,
+            'imdb_url': build_imdb_url(compact_imdb_id),
+            'poster_url': compact_poster_url,
+            'poster_full_url': build_poster_url(compact_poster_url) }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -85,9 +101,13 @@ def update_review(id: int, payload: APIReview,
     db: sqlite3.Connection = Depends(get_db)):
     """ Updates an existing review in the database. """
     
-    sql = 'UPDATE REVIEW SET TITLE = ?, NOTE = ?, DATE = ?, SEASON = ?, IMDB_LINK = ? WHERE ID = ?'
+    compact_imdb_id = normalize_imdb_link(payload.imdb_link)
+    poster_url = fetch_poster_url(payload.imdb_link)
+    compact_poster_url = normalize_poster_url(poster_url)
+    sql = 'UPDATE REVIEW SET TITLE = ?, NOTE = ?, DATE = ?, SEASON = ?, IMDB_LINK = ?, POSTER_URL = ? WHERE ID = ?'
     try:
-        db.execute(sql, (payload.title, payload.note, payload.date, payload.season, payload.imdb_link, id))
+        db.execute(sql, (payload.title, payload.note, payload.date, payload.season,
+            compact_imdb_id, compact_poster_url, id))
         db.commit()
         return {'success': 'Review updated successfully'}
     except Exception as e:
@@ -125,10 +145,19 @@ def edit_review_form(request: Request, id: int,
 
     cursor = db.execute('SELECT * FROM REVIEW WHERE ID = ?', (id,))
     row = cursor.fetchone()
-    review = dict(row) if row else None
+    review = _serialize_review(row) if row else None
 
     return templates.TemplateResponse(request, 'edit.html.tera',
         {'title': 'Edit Review', 'review': review})
+
+
+def _serialize_tosee_item(row):
+    data = dict(row)
+    data['imdb_link'] = normalize_imdb_link(data.get('imdb_link'))
+    data['imdb_url'] = build_imdb_url(data.get('imdb_link'))
+    data['poster_url'] = normalize_poster_url(data.get('poster_url'))
+    data['poster_full_url'] = build_poster_url(data.get('poster_url'))
+    return data
 
 
 @app.get('/api/tosee')
@@ -147,12 +176,12 @@ def get_tosee_items(title: Optional[str] = None, media_filter: Optional[str] = N
         clauses.append('LOWER(title) LIKE LOWER(?)')
         params.append(f'%{title}%')
 
-    where_clause = f'WHERE {" AND ".join(clauses)}' if clauses else ''
+    where_clause = f"WHERE {' AND '.join(clauses)}" if clauses else ''
     sql = f'SELECT * FROM TOSEE {where_clause} ORDER BY id DESC'
 
     try:
         cursor = db.execute(sql, params)
-        return [dict(row) for row in cursor.fetchall()]
+        return [_serialize_tosee_item(row) for row in cursor.fetchall()]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -161,16 +190,18 @@ def get_tosee_items(title: Optional[str] = None, media_filter: Optional[str] = N
 def create_tosee_item(payload: APIToseeItem, db: sqlite3.Connection = Depends(get_db)):
     """Creates a new item in the to-see list."""
 
+    compact_imdb_id = normalize_imdb_link(payload.imdb_link)
     sql = 'INSERT INTO TOSEE (TITLE, MEDIA_TYPE, IMDB_LINK, SEASONS) VALUES (?, ?, ?, ?)'
     try:
         cursor = db.execute(sql, (payload.title, payload.media_type,
-            payload.imdb_link, payload.seasons))
+            compact_imdb_id, payload.seasons))
         db.commit()
         return {
             'id': cursor.lastrowid,
             'title': payload.title,
             'media_type': payload.media_type,
-            'imdb_link': payload.imdb_link,
+            'imdb_link': compact_imdb_id,
+            'imdb_url': build_imdb_url(compact_imdb_id),
             'seasons': payload.seasons,
         }
     except Exception as e:
