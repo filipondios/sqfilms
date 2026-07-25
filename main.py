@@ -75,6 +75,11 @@ def create_review(payload: APIReview, db: sqlite3.Connection = Depends(get_db)):
             date_str, payload.season, compact_imdb_id, compact_poster_url))
         db.commit()
 
+        # Delete from TOSEE if requested
+        if payload.delete_tosee and payload.tosee_id:
+            db.execute('DELETE FROM TOSEE WHERE id = ?', (payload.tosee_id,))
+            db.commit()
+
         return { 'id': cursor.lastrowid, 'title': payload.title,
             'note': payload.note, 'date': date_str,
             'season': payload.season, 'imdb_link': compact_imdb_id,
@@ -186,15 +191,30 @@ def get_tosee_items(title: Optional[str] = None, media_filter: Optional[str] = N
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get('/api/tosee/{id}')
+def get_tosee_item(id: int, db: sqlite3.Connection = Depends(get_db)):
+    """Fetches a specific to-see item by ID."""
+    try:
+        cursor = db.execute('SELECT * FROM TOSEE WHERE id = ?', (id,))
+        row = cursor.fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Item not found")
+        return _serialize_tosee_item(row)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post('/api/tosee')
 def create_tosee_item(payload: APIToseeItem, db: sqlite3.Connection = Depends(get_db)):
     """Creates a new item in the to-see list."""
 
     compact_imdb_id = normalize_imdb_link(payload.imdb_link)
-    sql = 'INSERT INTO TOSEE (TITLE, MEDIA_TYPE, IMDB_LINK, SEASONS) VALUES (?, ?, ?, ?)'
+    poster_url = fetch_poster_url(payload.imdb_link)
+    compact_poster_url = normalize_poster_url(poster_url)
+    sql = 'INSERT INTO TOSEE (TITLE, MEDIA_TYPE, IMDB_LINK, SEASONS, POSTER_URL) VALUES (?, ?, ?, ?, ?)'
     try:
         cursor = db.execute(sql, (payload.title, payload.media_type,
-            compact_imdb_id, payload.seasons))
+            compact_imdb_id, payload.seasons, compact_poster_url))
         db.commit()
         return {
             'id': cursor.lastrowid,
@@ -203,6 +223,8 @@ def create_tosee_item(payload: APIToseeItem, db: sqlite3.Connection = Depends(ge
             'imdb_link': compact_imdb_id,
             'imdb_url': build_imdb_url(compact_imdb_id),
             'seasons': payload.seasons,
+            'poster_url': compact_poster_url,
+            'poster_full_url': build_poster_url(compact_poster_url),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

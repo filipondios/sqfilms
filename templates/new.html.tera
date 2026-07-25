@@ -48,6 +48,16 @@
             </label>
         </div>
 
+        <div id="tosee-section" class="tosee-section hidden">
+            <div class="tosee-toggle">
+                <span>Delete from To See?</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-delete-tosee" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
         <div class="form-buttons">
             <button type="submit" class="btn-primary">Save Review</button>
             <a href="/" class="btn-cancel">Cancel</a>

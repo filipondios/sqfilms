@@ -60,6 +60,10 @@
                     <h3 class="review-title">{{ item.title }}</h3>
                 </div>
                 <div class="review-actions">
+                    <a href="/new?tosee_id={{ item.id }}" class="btn-action review-btn" title="Create review from this item">
+                        <img src="/static/img/edit.svg" alt="Review icon">
+                        Review
+                    </a>
                     <form method="POST" action="/tosee/delete/{{ item.id }}" class="inline-form delete-form">
                         <button type="submit" class="btn-action delete-btn" title="Delete">
                             <img src="/static/img/delete.svg" alt="Delete icon">

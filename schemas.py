@@ -8,6 +8,8 @@ class APIReview(BaseModel):
     imdb_link: Optional[str] = None
     date: Optional[str] = None
     season: Optional[int] = None
+    tosee_id: Optional[int] = None
+    delete_tosee: Optional[bool] = False
 
     @field_validator("season", mode="before")
     @classmethod

@@ -12,8 +12,24 @@ def get_db():
     finally: conn.close()
 
 
+def _table_columns(conn, table_name):
+    rows = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return [row[1] for row in rows]
+
+
+def _ensure_exact_table(conn, table_name, create_sql):
+    table_exists = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+        (table_name,),
+    ).fetchone()
+
+    if table_exists is None:
+        conn.execute(create_sql)
+        return
+
+
 def init_db():
-    """ Initializes the database """
+    """ Initializes the database with the strict schema expected by the app. """
     db_exists = os.path.exists(DB_PATH)
 
     if not db_exists:
@@ -26,37 +42,35 @@ def init_db():
 
     try:
         with sqlite3.connect(DB_PATH) as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS REVIEW (
+            _ensure_exact_table(
+                conn,
+                "REVIEW",
+                """
+                CREATE TABLE REVIEW (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT NOT NULL,
                     note FLOAT NOT NULL,
                     date TEXT DEFAULT CURRENT_TIMESTAMP,
                     season INTEGER DEFAULT NULL,
-                    imdb_link TEXT DEFAULT NULL
+                    imdb_link TEXT DEFAULT NULL,
+                    poster_url TEXT DEFAULT NULL
                 );
-            """)
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS TOSEE (
+                """,
+            )
+            _ensure_exact_table(
+                conn,
+                "TOSEE",
+                """
+                CREATE TABLE TOSEE (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT NOT NULL,
                     media_type TEXT NOT NULL,
                     imdb_link TEXT DEFAULT NULL,
-                    seasons INTEGER DEFAULT NULL
+                    seasons INTEGER DEFAULT NULL,
+                    poster_url TEXT DEFAULT NULL
                 );
-            """)
-            _add_column_if_missing(conn, 'REVIEW', 'poster_url', 'TEXT DEFAULT NULL')
-            _add_column_if_missing(conn, 'TOSEE', 'poster_url', 'TEXT DEFAULT NULL')
+                """,
+            )
         print("[+] database initialized successfully")
     except Exception as e:
         raise RuntimeError(f"failed to open or create database: {e}")
-
-
-def _add_column_if_missing(conn, table, column, definition):
-    """ Adds a column to an existing table if it doesn't already exist.
-    Needed because CREATE TABLE IF NOT EXISTS won't alter tables that
-    already existed before this column was introduced. """
-    existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
-    if column not in existing:
-        print(f"[+] adding missing column {column} to {table}")
-        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
