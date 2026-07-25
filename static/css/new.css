@@ -66,6 +66,9 @@
   gap: 1rem;
   font-weight: 600;
   color: var(--clr-light-a0);
+  background-color: var(--clr-surface-a20);
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 .switch {
@@ -121,6 +124,21 @@ input:checked + .slider:before {
 .season-field label {
   display: flex;
   flex-direction: column;
+  font-weight: 600;
+  color: var(--clr-light-a0);
+}
+
+.tosee-section {
+  background-color: var(--clr-surface-a20);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.tosee-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   font-weight: 600;
   color: var(--clr-light-a0);
 }
