@@ -423,3 +423,7 @@ body.dark .results-summary {
   border-color: var(--clr-primary-a10);
   background-color: var(--clr-surface-a20);
 }
+
+.hidden {
+  display: none !important;
+}

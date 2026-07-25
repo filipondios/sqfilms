@@ -25,7 +25,7 @@
         </div>
     </header>
     <div class="main-content">
-        <div class="sort-container">
+        <div id="sort-container" class="sort-container {% if not reviews %}hidden{% endif %}">
             <div class="filters-wrapper">
                 <select id="type-select" class="filter-select" onchange="handleFiltersChange()">
                     <option value="all" {% if type_filter == "films" or type_filter == "series" %}{% else %}selected{% endif %}>All</option>
@@ -106,7 +106,9 @@
 
         function renderReviews(reviews) {
             const reviewsList = document.querySelector('ol');
-            
+            const sortContainer = document.getElementById('sort-container');
+            sortContainer.classList.toggle('hidden', reviews.length === 0);
+
             if (reviews.length === 0) {
                 reviewsList.innerHTML = `
                     <div class="empty-state">
