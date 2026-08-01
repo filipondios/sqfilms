@@ -35,7 +35,7 @@ DB_PATH="$HOME/.films-db"
 docker run -it --rm \
   -p 8000:8000 \
   -v $DB_PATH:/data \
-  sqfilms:v1.0.0
+  sqfilms:v2.0.0
 ```
 
 Once the container is running, open
