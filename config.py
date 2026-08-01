@@ -1,7 +1,6 @@
 import argparse
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv
 
 
@@ -19,9 +18,11 @@ def get_tmdb_api_key():
 def parse_args(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", required=True,
-        help="Ruta al archivo de la base de datos SQLite")
+        help="Path to the SQLite database file")
     parser.add_argument("--no-force", action="store_true",
-        help="Si se activa, el programa fallará si la base de datos no existe previamente")
+        help="If set, the program will fail if the database does not exist")
+    parser.add_argument("--ip", action="store",
+            help="The server IP address to bind", default="0.0.0.0")
     return parser.parse_known_args(argv)[0]
 
 

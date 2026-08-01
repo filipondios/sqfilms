@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import uvicorn
+from config import args
 from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, Request, HTTPException, Depends
@@ -264,7 +265,6 @@ def new_tosee_form(request: Request):
     })
 
 
-# Public-facing routes used by the frontend (aliases without /api prefix)
 @app.get('/reviews')
 def get_reviews_public(title: Optional[str] = None, 
     sort_by: Optional[str] = None, type_filter: Optional[str] = None, 
@@ -310,5 +310,5 @@ def delete_tosee_item_public(request: Request, id: int,
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='127.0.0.1', 
+    uvicorn.run('main:app', host=args.ip, 
         port=8000, reload=True)
