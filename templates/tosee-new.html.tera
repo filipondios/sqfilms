@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/new.css">
+    <link rel="icon" href="/static/img/icon.svg" type="image/svg+xml">
+    <script src="/static/js/tosee-create.js" defer></script>
+</head>
+<body>
+<header class="page-header">
+    <div class="header-top">
+        <h1>{{ title }}</h1>
+    </div>
+</header>
+
+<div class="main-content">
+    <form id="tosee-form" class="review-form">
+        <label>
+            Title:
+            <input type="text" name="title" required placeholder="Enter film or series title">
+        </label>
+        <label>
+            IMDb ID or URL:
+            <input type="text" name="imdb_link" placeholder="tt5463162 or https://www.imdb.com/title/tt5463162">
+        </label>
+        <div class="season-toggle">
+            <span>Is this a series?</span>
+            <label class="switch">
+                <input type="checkbox" id="toggle-series">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <label id="seasons-field" class="hidden">
+            Seasons:
+            <input type="number" name="seasons" min="1" placeholder="Only for series">
+        </label>
+
+        <div class="form-buttons">
+            <button type="submit" class="btn-primary">Save</button>
+            <a href="/tosee" class="btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

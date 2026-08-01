@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/index.css">
+    <link rel="icon" href="/static/img/icon.svg" type="image/svg+xml">
+</head>
+<body>
+    <header class="page-header">
+        <div class="header-nav-left">
+            <a href="/" class="header-nav-btn" title="Go to reviews">
+                <img src="/static/img/book.svg" alt="" class="nav-icon">
+                <span>Reviews</span>
+            </a>
+        </div>
+        <div class="header-top">
+            <h1>{{ title }}</h1>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="title-input" placeholder="Filter by title" value="{{ title_filter or '' }}">
+            <div class="filters-wrapper compact">
+                <select id="media-select" class="filter-select">
+                    <option value="all" {% if media_filter == 'all' %}selected{% endif %}>All</option>
+                    <option value="movies" {% if media_filter == 'movies' %}selected{% endif %}>Movies</option>
+                    <option value="series" {% if media_filter == 'series' %}selected{% endif %}>Series</option>
+                </select>
+                <a href="/tosee/new" class="add-button" title="Add to see item">+</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+
+        <ol class="reviews-grid tosee-grid">
+        {% for item in items %}
+        <li class="review-card tosee-card">
+            <div class="poster-wrap">
+                {% if item.imdb_link %}
+                <a class="poster-link" href="{{ item.imdb_url or ('https://www.imdb.com/title/tt' ~ item.imdb_link) }}" target="_blank" rel="noopener noreferrer" aria-label="Open IMDb for {{ item.title }}">
+                {% endif %}
+                    <img class="poster" src="{{ item.poster_full_url or item.poster_url or '/static/img/poster-placeholder.svg' }}"
+                        alt="Poster of {{ item.title }}" loading="lazy"
+                        onerror="this.onerror=null;this.src='/static/img/poster-placeholder.svg';">
+                {% if item.imdb_link %}</a>{% endif %}
+                <div class="poster-top-left">
+                    {% if item.media_type == 'movie' %}
+                        <span class="tag film overlay-tag">Movie</span>
+                    {% else %}
+                        <div class="overlay-group series-stack">
+                            <span class="tag series overlay-tag">Series</span>
+                            {% if item.seasons %}<span class="tag season overlay-tag season-inline">{{ item.seasons }} seasons</span>{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="title-tags">
+                    <h3 class="review-title">{{ item.title }}</h3>
+                </div>
+                <div class="review-actions">
+                    <a href="/new?tosee_id={{ item.id }}" class="btn-action review-btn" title="Create review from this item">
+                        <img src="/static/img/edit.svg" alt="Review icon">
+                        Review
+                    </a>
+                    <form method="POST" action="/tosee/delete/{{ item.id }}" class="inline-form delete-form">
+                        <button type="submit" class="btn-action delete-btn" title="Delete">
+                            <img src="/static/img/delete.svg" alt="Delete icon">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </li>
+        {% else %}
+        <div class="empty-state">
+            <img src="/static/img/warning.svg" aria-hidden="true" class="empty-icon"/>
+            <p class="no-results">No items found</p>
+        </div>
+        {% endfor %}
+        </ol>
+    </div>
+
+    <footer class="results-summary">
+        <p>{{ items | length }} items</p>
+    </footer>
+
+    <script>
+        const titleInput = document.getElementById('title-input');
+        const mediaSelect = document.getElementById('media-select');
+
+        function fetchItems() {
+            const params = new URLSearchParams();
+            if (titleInput.value) params.append('title', titleInput.value);
+            if (mediaSelect.value !== 'all') params.append('media_filter', mediaSelect.value);
+
+            const query = params.toString() ? '?' + params.toString() : '';
+            window.location.href = '/tosee' + query;
+        }
+
+        titleInput.addEventListener('input', () => {
+            clearTimeout(window.toseeSearchTimeout);
+            window.toseeSearchTimeout = setTimeout(fetchItems, 400);
+        });
+
+        mediaSelect.addEventListener('change', fetchItems);
+
+        document.querySelectorAll('.delete-form').forEach(form => {
+            form.addEventListener('submit', function (event) {
+                if (!confirm('¿Estás seguro de que deseas eliminar este elemento?')) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

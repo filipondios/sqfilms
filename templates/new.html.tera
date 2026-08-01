@@ -30,8 +30,8 @@
             <input type="date" name="date">
         </label>
         <label>
-            IMDb Link:
-            <input type="url" name="imdb_link" placeholder="https://www.imdb.com/title/...">
+            IMDb ID or URL:
+            <input type="text" name="imdb_link" placeholder="tt5463162 or https://www.imdb.com/title/tt5463162">
         </label>
         <div class="season-toggle">
             <span>Is this a series?</span>
@@ -46,6 +46,16 @@
                 Season number:
                 <input type="number" name="season" min="1" placeholder="Enter season number">
             </label>
+        </div>
+
+        <div id="tosee-section" class="tosee-section hidden">
+            <div class="tosee-toggle">
+                <span>Delete from To See?</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-delete-tosee" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
         <div class="form-buttons">

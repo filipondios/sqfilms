@@ -30,8 +30,8 @@
             <input type="date" name="date" value="{{ review.date }}">
         </label>
         <label>
-            IMDb Link:
-            <input type="url" name="imdb_link" value="{{ review.imdb_link | default(value='') }}">
+            IMDb ID or URL:
+            <input type="text" name="imdb_link" value="{{ review.imdb_link | default('') }}">
         </label>
 
         {% if review.season is defined and review.season %}
