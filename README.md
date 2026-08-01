@@ -38,14 +38,6 @@ docker run -it --rm \
   sqfilms:v1.0.0
 ```
 
-On the other hand, instead of pulling my docker image from Docker Hub, you
-can clone this repository and build the Docker image:
-
-```bash
-git clone https://github.com/filipondios/sqfilms.git
-cd sqfilms && docker build -t sqfilms .
-```
-
 Once the container is running, open
 <a href='http://localhost:8000'>http://localhost:8000</a>
 in your browser to access the web interface.
