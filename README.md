@@ -1,9 +1,8 @@
 <!-- # sqfilms -->
 <div align="center">
   <h1>sqfilms</h1>
-  <p>A movie & series review web app built with <a href="https://rust-lang.org/">Rust</a>,
-    <a href="https://rocket.rs/">Rocket</a> and <a href="https://sqlite.org/">SQLite</a>.</p>
-  <img height="600" alt="image" src="https://github.com/user-attachments/assets/6e264936-23cb-4691-85da-e90901c57fce"/>
+  <p>A movie & series review web app built with <a href="https://fastapi.tiangolo.com/">FastAPI</a> and <a href="https://sqlite.org/">SQLite</a>.</p>  
+    <img height="600" alt="image" src="https://github.com/user-attachments/assets/cc6c2628-72dc-4f52-b756-c3f2d9a87d47"/>
 </div>
 
 > [!IMPORTANT]
@@ -52,14 +51,14 @@ Once the container is running, open
 in your browser to access the web interface.
 
 
-## Building from source
+## Running from source
 
-After cloning this repository, you just need to run cargo in
-order to compile the program (ensure you have the rust toolchain
-installed in your system).
+After cloning this repository, you just need to puthon in
+order to run the program (ensure you have python installed
+in your system).
 
 ```bash
-git clone https://github.com/filipondios/sqfilms -b v1.0.0
-cd sqfilms && cargo build --release
-cargo run -- --path $DB_PATH
+git clone https://github.com/filipondios/sqfilms
+cd sqfilms && python -m venv venv
+python .\main.py -p $DB_PATH
 ```
