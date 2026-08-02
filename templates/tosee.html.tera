@@ -8,28 +8,30 @@
     <link rel="icon" href="/static/img/icon.svg" type="image/svg+xml">
 </head>
 <body>
-    <header class="page-header">
-        <div class="header-nav-left">
-            <a href="/" class="header-nav-btn" title="Go to reviews">
-                <img src="/static/img/book.svg" alt="" class="nav-icon">
-                <span>Reviews</span>
-            </a>
-        </div>
-        <div class="header-top">
-            <h1>{{ title }}</h1>
-        </div>
-        <div class="search-bar">
-            <input type="text" id="title-input" placeholder="Filter by title" value="{{ title_filter or '' }}">
-            <div class="filters-wrapper compact">
-                <select id="media-select" class="filter-select">
-                    <option value="all" {% if media_filter == 'all' %}selected{% endif %}>All</option>
-                    <option value="movies" {% if media_filter == 'movies' %}selected{% endif %}>Movies</option>
-                    <option value="series" {% if media_filter == 'series' %}selected{% endif %}>Series</option>
-                </select>
-                <a href="/tosee/new" class="add-button" title="Add to see item">+</a>
+    <div class="top-bar-shell">
+        <header class="page-header">
+            <div class="header-nav-left">
+                <a href="/" class="header-nav-btn" title="Go to reviews">
+                    <img src="/static/img/book.svg" alt="" class="nav-icon">
+                    <span>Reviews</span>
+                </a>
             </div>
-        </div>
-    </header>
+            <div class="header-top">
+                <h1>{{ title }}</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="title-input" placeholder="Filter by title" value="{{ title_filter or '' }}">
+                <div class="filters-wrapper compact">
+                    <select id="media-select" class="filter-select">
+                        <option value="all" {% if media_filter == 'all' %}selected{% endif %}>All</option>
+                        <option value="movies" {% if media_filter == 'movies' %}selected{% endif %}>Movies</option>
+                        <option value="series" {% if media_filter == 'series' %}selected{% endif %}>Series</option>
+                    </select>
+                    <a href="/tosee/new" class="add-button" title="Add to see item">+</a>
+                </div>
+            </div>
+        </header>
+    </div>
 
     <div class="main-content">
 

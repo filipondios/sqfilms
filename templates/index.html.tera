@@ -9,22 +9,22 @@
     <script src="/static/js/delete-review-confirm.js" defer></script>
 </head>
 <body>
-    <header class="page-header">
-        <div class="header-nav-left">
-            <a href="/tosee" class="header-nav-btn" title="Open to-see list">
-                <img src="/static/img/checklist.svg" alt="" class="nav-icon">
-                <span>To See</span>
-            </a>
-        </div>
-        <div class="header-top">
-            <h1>{{ title }}</h1>
-        </div>
-        <div class="search-bar">
-            <input type="text" id="title-input" placeholder="Filter by title" value="{{ title_filter or '' }}" oninput="handleTitleSearch()">
-            <a href="/new" class="add-button" title="Add new review">+</a>
-        </div>
-    </header>
-    <div class="main-content">
+    <div class="top-bar-shell">
+        <header class="page-header">
+            <div class="header-nav-left">
+                <a href="/tosee" class="header-nav-btn" title="Open to-see list">
+                    <img src="/static/img/checklist.svg" alt="" class="nav-icon">
+                    <span>To See</span>
+                </a>
+            </div>
+            <div class="header-top">
+                <h1>{{ title }}</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="title-input" placeholder="Filter by title" value="{{ title_filter or '' }}" oninput="handleTitleSearch()">
+                <a href="/new" class="add-button" title="Add new review">+</a>
+            </div>
+        </header>
         <div id="sort-container" class="sort-container {% if not reviews %}hidden{% endif %}">
             <div class="filters-wrapper">
                 <select id="type-select" class="filter-select" onchange="handleFiltersChange()">
@@ -38,6 +38,8 @@
                 </select>
             </div>
         </div>
+    </div>
+    <div class="main-content">
         <ol class="reviews-grid">
         {% for r in reviews %}
         <li class="review-card">
