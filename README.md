@@ -1,8 +1,8 @@
 <!-- # sqfilms -->
 <div align="center">
   <h1>sqfilms</h1>
-  <p>A movie & series review web app built with <a href="https://fastapi.tiangolo.com/">FastAPI</a> and <a href="https://sqlite.org/">SQLite</a>.</p>  
-    <img height="600" alt="image" src="https://github.com/user-attachments/assets/cc6c2628-72dc-4f52-b756-c3f2d9a87d47"/>
+  <p>A movie & series review web app built with <a href="https://fastapi.tiangolo.com/">FastAPI</a> and <a href="https://sqlite.org/">SQLite</a>.</p>
+    <img height="600" alt="image" src="https://github.com/user-attachments/assets/6bfa0b75-e3e6-40c0-8992-53c09f4889a9"/>
 </div>
 
 > [!IMPORTANT]
