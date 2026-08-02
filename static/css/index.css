@@ -85,9 +85,29 @@
   justify-content: space-between;
 }
 
+.tosee-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(12rem, 100%), 1fr));
+}
+
 .tosee-card .review-actions {
   justify-content: flex-end;
   margin-top: auto;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.tosee-card .review-actions .inline-form {
+  display: flex;
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.tosee-card .review-actions .btn-action {
+  flex: 1 1 100%;
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
 }
 
 .poster-wrap {
@@ -354,14 +374,14 @@ body.dark .results-summary {
 }
 
 .edit-btn {
-  background-color: var(--clr-surface-a10);
+  background-color: var(--clr-info-a10);
   color: var(--clr-light-a0);
   border-color: var(--clr-surface-a30);
 }
 
 .review-btn {
   background-color: var(--clr-info-a10);
-  color: var(--clr-dark-a0);
+  color: var(--clr--light-a10);
   border-color: var(--clr-info-a10);
 }
 
