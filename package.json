@@ -1,0 +1,16 @@
+{
+  "name": "sqfilms",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "hono": "^4.13.4",
+    "zod": "^4.4.3"
+  }
+}

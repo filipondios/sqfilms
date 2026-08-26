@@ -1,0 +1,150 @@
+Puntos de mejora en la app actual
+
+Arquitectura / diseño
+
+- Rutas duplicadas sin razón clara: tienes /api/reviews y /reviews, /api/tosee y /tosee-items, con handlers que simplemente llaman al otro (get_reviews_public → get_reviews). Esto duplica superficie de API y confunde qué es "la" API real. En la migración conviene quedarte con un único namespace /api/* JSON y separar limpiamente las rutas que renderizan HTML.
+
+- Serializadores duplicados: _serialize_review y _serialize_tosee_item son casi idénticos (normalizan imdb/poster). Debería ser una función genérica.
+Handlers llamados como funciones normales: index() llama a get_reviews(...) directamente en vez de pasar por una capa de servicio; mezcla la responsabilidad HTTP con la de negocio. Con la migración es buen momento para meter una capa services/ separada de las rutas.
+
+- Config global a nivel de import: args = parse_args() se ejecuta al importar config.py, lo que acopla todo el módulo a sys.argv y hace imposible testear sin pasar argv falsos.
+
+Fiabilidad
+
+- except Exception as e: raise HTTPException(500, detail=str(e)) en cada endpoint: filtra mensajes internos (rutas, stacktrace parcial) al cliente y no deja logs estructurados en servidor.
+
+- La llamada a TMDB (fetch_poster_url) es síncrona y bloqueante dentro de un endpoint async-capable, con timeout de 5s: si TMDB va lento, cada creación/edición de review se congela hasta 5s.
+
+- Sin caché de pósters/metadata TMDB más allá de lo que guardas tú mismo en la DB — no hay problema grave, pero cuando añadas recomendaciones vas a hacer bastantes llamadas a TMDB y ahí sí conviene cachear.
+
+Seguridad
+
+- No hay auth de ningún tipo — cualquiera con acceso a la URL puede crear/editar/borrar reviews. Vale para uso personal, pero merece la pena que lo decidas conscientemente (¿sigue siendo solo para ti o lo vas a exponer?).
+
+- Sin CSRF token en los <form method="POST">.
+
+Frontend
+
+- La plantilla de card de review está duplicada en Jinja (index.html.tera) y en JS (renderReviews, template string). Cualquier cambio visual hay que hacerlo dos veces y se desincronizan fácil. Con Bun+TS es buen momento para renderizar todo client-side desde JSON (o usar un único motor de plantillas también en el fetch dinámico).
+
+- Nombre .tera es confuso: Tera es el motor de plantillas de Rust, pero aquí se usa Jinja2 de Python — el nombre del archivo sugiere lo contrario.
+
+Datos
+
+- note FLOAT NOT NULL sin restricción de rango (¿0–10? ¿0–5?) — vale la pena un CHECK en la migración de esquema.
+
+- Sin índices más allá de la PK; con pocas reviews no importa, pero si vas a hacer recomendaciones vas a consultar mucho por title/note, así que un índice ligero no está de más.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Feature de recomendaciones (enfoque de calidad, ponderado por nota)
+===================================================================
+
+Idea central: cada review que has hecho "vota" por sus recomendaciones en TMDB, con un peso proporcional a la nota que le pusiste. Una película que te encantó empuja mucho más fuerte que una que puntuaste con un 4.
+
+Pipeline:
+
+Resolver TMDB ID una sola vez. Ahora mismo tu app resuelve imdb_id → tmdb poster en cada creación de review pero no guarda el tmdb_id. Añade una columna tmdb_id (y media_type: 'movie'|'tv') a REVIEW en el nuevo esquema, resuelta una vez vía /find/{imdb_id} y cacheada en la fila. Esto evita repetir esa llamada cada vez que recalcules recomendaciones.
+
+Candidatos por título visto. Para cada review con tmdb_id, llama a /movie/{id}/recommendations o /tv/{id}/recommendations (o /similar si quieres resultados menos "algorítmicos" y más por parecido temático — puedes combinar ambos y quedarte con la unión).
+
+Puntuación agregada:
+   peso_review(r) = nota(r) / nota_max        // normaliza tu escala, ej. 0–10 → 0–1
+   rank_score(c, posición_en_lista) = 1 / (posición + 1)   // TMDB ya devuelve ordenado por relevancia
+
+   score[candidato] += peso_review(r) * rank_score(candidato, posición)
+
+Sumado sobre todas tus reviews. Un candidato que aparece recomendado desde varios títulos que amaste sube mucho; uno que solo aparece desde algo que puntuaste bajo, casi no suma.
+
+Filtros obligatorios: excluir tmdb_id que ya estén en REVIEW o en TOSEE (no recomendar lo que ya viste o ya tienes pendiente).
+
+Refinamiento opcional pero de bajo coste — afinidad por género: calcula tu "perfil de gustos" como nota media ponderada por género (usando genre_ids que ya viene en las respuestas de TMDB). Con eso, re-rankeas los candidatos: score_final = score * (1 + boost_genero). Esto mejora mucho la calidad porque compensa el sesgo de "TMDB recomienda lo más popular" con lo que realmente sueles puntuar alto.
+
+Caché obligatoria. Si tienes 50 reviews, esto son ~50 llamadas a TMDB por recálculo — nada que quieras hacer en cada GET /. Añade una tabla recommendations_cache (tmdb_id, media_type, score, title, poster_path, computed_at) y recalcula solo cuando: (a) el usuario pulsa un botón "Actualizar recomendaciones", o (b) han pasado X horas desde computed_at más reciente. Nada de recalcular en cada carga de página.
+
+Nuevo endpoint: GET /api/recommendations devuelve el top-N cacheado; POST /api/recommendations/refresh fuerza el recálculo.
+
+Esto encaja bien con corregir el problema que detecté antes (la llamada a TMDB bloqueante en cada request) — en la versión nueva, las llamadas a TMDB para recomendaciones se hacen en background/bajo demanda explícita, nunca en el hilo de una petición normal de listado.
+
+
+
+
+
+
+
+
+
+
+
+Migración a Bun + TypeScript (big bang, rama nueva)
+
+Stack propuesto:
+
+- Runtime: Bun
+
+- Framework HTTP: Hono — ligero, TS-first, y con soporte JSX para SSR sin necesitar React. Esto es clave: te permite matar la duplicación de plantillas (Jinja + JS) que detecté antes, porque el mismo componente JSX puede renderizar tanto la carga inicial como los fragmentos HTML que devuelves al filtrar/ordenar.
+
+- Frontend dinámico: sustituir tu JS manual de fetch+innerHTML por htmx. En vez de devolver JSON y reconstruir el DOM a mano en renderReviews(), el backend devuelve HTML ya renderizado (con el mismo componente JSX que la carga inicial) y htmx lo intercambia. Elimina de raíz el problema de "dos sitios donde vive el markup de una card".
+
+- Base de datos: bun:sqlite (nativo en Bun, sin dependencias extra), API muy parecida a sqlite3 de Python.
+
+- Validación: Zod, como reemplazo directo de tus modelos Pydantic (APIReview, APIToseeItem).
+
+- Config: Bun carga .env automáticamente; valida las variables con Zod al arrancar (fail-fast en vez de None silencioso como ahora).
+
+- Tests: bun:test (built-in) — actualmente no hay ni un test, así que es zero-cost añadirlos desde el principio.
+
+Estructura propuesta:
+
+src/
+  index.ts
+  config.ts
+  db/
+    client.ts
+    schema.sql
+  services/
+    reviews.service.ts
+    tosee.service.ts
+    tmdb.service.ts
+    recommendations.service.ts
+  routes/
+    reviews.routes.ts
+    tosee.routes.ts
+    recommendations.routes.ts
+    pages.routes.ts
+  views/                # JSX, reemplaza templates/*.tera
+    layout.tsx
+    review-card.tsx
+    index.page.tsx
+    ...
+public/                 # ex static/
+tests/
+
+Orden de trabajo dentro de la rama (aunque sea "big bang", conviene este orden para poder validar por partes):
+
+- Scaffold Bun + Hono + tsconfig + dependencias
+
+- Capa DB: esquema nuevo con las mejoras (CHECK en note, índice en title COLLATE NOCASE, columna tmdb_id, tabla recommendations_cache). El fichero reviews.db existente es compatible tal cual (SQLite es SQLite, da igual el driver) — solo corres una migración una vez para añadir las columnas nuevas.
+
+- Servicios: reviews, tosee, tmdb (con caché), config — un único namespace /api/*, sin las rutas duplicadas actuales.
+
+- Rutas API + páginas SSR
+- Vistas JSX + integración htmx (sustituye todo el JS a medida actual)
+- Feature de recomendaciones (servicio + ruta + vista)
+- Migrar static/ (CSS/imágenes se reutilizan casi sin cambios)
+
+- Tests con bun:test para servicios (CRUD de reviews, normalización imdb/poster, scoring de recomendaciones — esta última es la más fácil de romper sin darte cuenta, así que merece tests desde ya)
+
+- Dockerfile nuevo con imagen oficial oven/bun
+
+- Validar contra el reviews.db real antes de hacer el switch definitivo; mantén la rama Python intacta hasta confirmar que todo funciona igual o mejor.
