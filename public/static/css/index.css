@@ -11,11 +11,11 @@
   gap: 0.4rem;
   padding: 0.45rem 0.7rem;
   border-radius: 999px;
-  background-color: var(--clr-surface-a10);
   color: var(--clr-light-a0);
   font-size: 0.9rem;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  background-color: rgb(7, 7, 7);
 }
 
 .nav-icon {

@@ -5,7 +5,7 @@ import {
     buildImdbUrl,
     normalizePosterUrl,
     buildPosterUrl,
-    fetchPosterUrl
+    lookupTmdbInfo
 } from './tmdb.service'
 
 export interface ToseeItem {
@@ -68,14 +68,14 @@ export async function createToseeItem(payload: {title: string, mediaType: 'movie
     imdbLink?: string | null, seasons?: number | null}): Promise<SerializedToseeItem> {
     const db = getDb()
     const compactImdbId = normalizeImdbLink(payload.imdbLink)
-    const posterUrl = await fetchPosterUrl(payload.imdbLink)
-    const compactPosterUrl = normalizePosterUrl(posterUrl)
+    const tmdbInfo = await lookupTmdbInfo(payload.imdbLink)
+    const compactPosterUrl = normalizePosterUrl(tmdbInfo.posterUrl)
 
     const result = db.query(
         `INSERT INTO tosee (title, media_type, imdb_link, seasons, poster_url)
         VALUES (?, ?, ?, ?, ?) RETURNING *`
     ).get(payload.title, payload.mediaType, compactImdbId, 
-    payload.seasons ?? null, compactPosterUrl) as ToseeItem
+        payload.seasons ?? null, compactPosterUrl) as ToseeItem
     return serialize(result)
 }
 

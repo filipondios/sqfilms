@@ -28,14 +28,14 @@ export function IndexPage(props: {reviews: SerializedReview[], films: number,
             <div id="sort-container" class={`sort-container ${reviews.length === 0 ? 'hidden' : ''}`}>
                 <div class="filters-wrapper">
                     <select id="type-select" name="type_filter" hx-get="/reviews-fragment"
-                        hx-target="#reviews-list" hx-include="[name='title'],#sort-select">
+                        hx-target="#reviews-list" hx-include="[name='title'],#sort-select" class="filter-select">
                         <option value="all" selected={typeFilter !== 'films' 
                             && typeFilter !== 'series'}>All</option>
                         <option value="films" selected={typeFilter === 'films'}>Only Films</option>
                         <option value="series" selected={typeFilter === 'series'}>Only Series</option>
                     </select>
                     <select id="sort-select" name="sort_by" hx-get="/reviews-fragment" 
-                        hx-target="#reviews-list" hx-include="[name='title'],#type-select">
+                        hx-target="#reviews-list" hx-include="[name='title'],#type-select" class="filter-select">
                         <option value="insert_oldest" 
                             selected={sortBy === 'insert_oldest'}>By insertion (oldest)</option>
                         <option value="insert_newest" 

@@ -4,8 +4,9 @@ import {
     buildImdbUrl,
     normalizePosterUrl,
     buildPosterUrl,
-    fetchPosterUrl,
+    lookupTmdbInfo
 } from './tmdb.service'
+
 
 export interface Review {
     id: number
@@ -71,13 +72,14 @@ export async function createReview(payload: { title: string, note: number,
     const db = getDb()
     const dateStr = payload.date ?? new Date().toISOString().slice(0, 10)
     const compactImdbId = normalizeImdbLink(payload.imdbLink)
-    const posterUrl = await fetchPosterUrl(payload.imdbLink)
-    const compactPosterUrl = normalizePosterUrl(posterUrl)
+    const tmdbInfo = await lookupTmdbInfo(payload.imdbLink)
+    const compactPosterUrl = normalizePosterUrl(tmdbInfo.posterUrl)
 
     const result = db.query(
         `INSERT INTO review (title, note, date, season, imdb_link, poster_url)
         VALUES (?, ?, ?, ?, ?, ?) RETURNING *`
-    ).get(payload.title, payload.note, dateStr, payload.season ?? null, compactImdbId, compactPosterUrl) as Review
+    ).get(payload.title, payload.note, dateStr, payload.season ?? null,
+        compactImdbId, compactPosterUrl) as Review
     return serialize(result)
 }
 

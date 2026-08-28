@@ -4,6 +4,14 @@ const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w342'
 const TMDB_FIND_URL = 'https://api.themoviedb.org/3/find'
 const REQUEST_TIMEOUT_MS = 5000
 
+export interface TmdbLookupResult {
+  posterUrl: string | null
+  tmdbId: number | null
+  mediaType: 'movie' | 'tv' | null
+}
+
+const EMPTY_LOOKUP: TmdbLookupResult = { 
+    posterUrl: null, tmdbId: null, mediaType: null }
 
 export function normalizeImdbLink(imdbLink: string | null | undefined): string | null {
     if (!imdbLink) return null
@@ -25,40 +33,6 @@ export function buildImdbUrl(imdbLink: string | null | undefined): string | null
 export function extractImdbId(imdbLink: string | null | undefined): string | null {
     const imdbId = normalizeImdbLink(imdbLink)
     return imdbId ? `tt${imdbId}` : null
-}
-
-export async function fetchPosterUrl(imdbLink: string | null | undefined): Promise<string | null> {
-    const tmdbKey = getTmdbApiKey()
-    if (!tmdbKey) return null
-
-    const imdbId = extractImdbId(imdbLink)
-    if (!imdbId) return null
-
-    const url = new URL(`${TMDB_FIND_URL}/${imdbId}`)
-    url.searchParams.set('api_key', tmdbKey)
-    url.searchParams.set('external_source', 'imdb_id')
-
-    try {
-        const response = await fetch(url, {
-            signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
-
-        if (!response.ok) {
-            console.error(`[!] TMDb lookup failed for ${imdbId}: HTTP ${response.status}`)
-            return null
-        }
-
-        const data = await response.json()
-        for (const key of ['movie_results', 'tv_results'] as const) {
-            const results = data[key] ?? []
-            if (results.length > 0 && results[0].poster_path) {
-                return `${TMDB_IMAGE_BASE}${results[0].poster_path}`
-            }
-        }
-        return null
-    } catch (e) {
-        console.error(`[!] TMDb request failed for ${imdbId}:`, e)
-        return null
-    }
 }
 
 export function normalizePosterUrl(posterUrl: string | null | undefined): string | null {
@@ -93,3 +67,46 @@ export function buildPosterUrl(posterUrl: string | null | undefined): string | n
     const withExt = normalized.includes('.') ? normalized : `${normalized}.jpg`
     return `${TMDB_IMAGE_BASE}/${withExt.replace(/^\/+/, '')}`
 }
+
+export async function lookupTmdbInfo(imdbLink: string | null | undefined):
+    Promise<TmdbLookupResult> {
+    const tmdbKey = getTmdbApiKey()
+    if (!tmdbKey) return EMPTY_LOOKUP
+
+    const imdbId = extractImdbId(imdbLink)
+    if (!imdbId) return EMPTY_LOOKUP
+
+    const url = new URL(`${TMDB_FIND_URL}/${imdbId}`)
+    url.searchParams.set('api_key', tmdbKey)
+    url.searchParams.set('external_source', 'imdb_id')
+
+    try {
+        const response = await fetch(url, 
+            { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) })
+        if (!response.ok) {
+            console.error(`[!] TMDb lookup failed for ${imdbId}: HTTP ${response.status}`)
+            return EMPTY_LOOKUP
+        }
+
+        const data = await response.json()
+        const resultsByType: Array<[key: 'movie_results' | 
+            'tv_results', mediaType: 'movie' | 'tv']> = [
+            ['movie_results', 'movie'], ['tv_results', 'tv'],
+        ]
+
+        for (const [key, mediaType] of resultsByType) {
+            const first = (data[key] ?? [])[0]
+            if (first) {
+                return { posterUrl: first.poster_path ? 
+                    `${TMDB_IMAGE_BASE}${first.poster_path}` : null,
+                    tmdbId: first.id ?? null, mediaType }
+            }
+        }
+        return EMPTY_LOOKUP
+    } catch (e) {
+        console.error(`[!] TMDb request failed for ${imdbId}:`, e)
+        return EMPTY_LOOKUP
+    }
+}
+
+

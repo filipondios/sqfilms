@@ -24,7 +24,7 @@ body {
   font-family: Montserrat, sans-serif;
   background:
     radial-gradient(circle at top left, rgba(122, 139, 153, 0.15), transparent 20%),
-    linear-gradient(135deg, var(--clr-surface-a0) 0%, #0b1016 100%);
+    linear-gradient(135deg, var(--clr-surface-a0) 0%, #070809 100%);
   color: var(--clr-light-a0);
 }
 
@@ -41,7 +41,7 @@ body {
   top: 0;
   z-index: 110;
   width: 100%;
-  background: rgb(14 16 17 / 78%);
+  background: rgba(15, 15, 15, 0.78);
   backdrop-filter: blur(12px);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
   margin: 0;
